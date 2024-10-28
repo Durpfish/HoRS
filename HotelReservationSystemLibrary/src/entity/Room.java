@@ -5,10 +5,16 @@
 package entity;
 
 import java.io.Serializable;
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import util.enumeration.roomStatus;
 
 /**
  *
@@ -21,6 +27,20 @@ public class Room implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long roomId;
+    
+    @Column(nullable = false, unique = true)
+    private String roomNumber;
+    
+    private int floorNumber;
+    
+    private boolean disabled;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "roomTypeId")
+    private RoomType roomType;
+
+    @Enumerated(EnumType.STRING)
+    private roomStatus status; 
 
     public Long getRoomId() {
         return roomId;
@@ -28,6 +48,46 @@ public class Room implements Serializable {
 
     public void setRoomId(Long roomId) {
         this.roomId = roomId;
+    }
+
+    public String getRoomNumber() {
+        return roomNumber;
+    }
+
+    public void setRoomNumber(String roomNumber) {
+        this.roomNumber = roomNumber;
+    }
+
+    public int getFloorNumber() {
+        return floorNumber;
+    }
+
+    public void setFloorNumber(int floorNumber) {
+        this.floorNumber = floorNumber;
+    }
+
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
+    }
+
+    public RoomType getRoomType() {
+        return roomType;
+    }
+
+    public void setRoomType(RoomType roomType) {
+        this.roomType = roomType;
+    }
+
+    public roomStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(roomStatus status) {
+        this.status = status;
     }
 
     @Override
