@@ -5,6 +5,7 @@
 package entity;
 
 import java.io.Serializable;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -21,6 +22,23 @@ public class RoomType implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long roomTypeId;
+    
+    @Column(nullable = false)
+    private String name;
+
+    private String description;
+
+    @Column(nullable = false)
+    private int capacity;
+
+    @Column(nullable = false)
+    private double size;
+
+    private String bedType; // e.g., Queen, King
+
+    private String amenities;
+    
+    private boolean disabled;
 
     public Long getRoomTypeId() {
         return roomTypeId;
@@ -28,6 +46,62 @@ public class RoomType implements Serializable {
 
     public void setRoomTypeId(Long roomTypeId) {
         this.roomTypeId = roomTypeId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
+    }
+
+    public double getSize() {
+        return size;
+    }
+
+    public void setSize(double size) {
+        this.size = size;
+    }
+
+    public String getBedType() {
+        return bedType;
+    }
+
+    public void setBedType(String bedType) {
+        this.bedType = bedType;
+    }
+
+    public String getAmenities() {
+        return amenities;
+    }
+
+    public void setAmenities(String amenities) {
+        this.amenities = amenities;
+    }
+
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
     }
 
     @Override
