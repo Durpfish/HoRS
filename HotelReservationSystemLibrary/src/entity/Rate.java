@@ -5,10 +5,14 @@
 package entity;
 
 import java.io.Serializable;
+import java.time.LocalDate;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 
 /**
  *
@@ -21,6 +25,24 @@ public class Rate implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long rateId;
+    
+    @Column(nullable = false)
+    private double ratePerNight;
+
+    @Column(nullable = false)
+    private LocalDate validFrom;
+
+    @Column(nullable = false)
+    private LocalDate validTo;
+    
+    private boolean disabled;
+    
+    @Column(nullable = false)
+    private String rateType; // Standard, Seasonal, Promotion
+    
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "roomTypeId")
+    private RoomType roomType;
 
     public Long getRateId() {
         return rateId;
@@ -28,6 +50,54 @@ public class Rate implements Serializable {
 
     public void setRateId(Long rateId) {
         this.rateId = rateId;
+    }
+
+    public double getRatePerNight() {
+        return ratePerNight;
+    }
+
+    public void setRatePerNight(double ratePerNight) {
+        this.ratePerNight = ratePerNight;
+    }
+
+    public LocalDate getValidFrom() {
+        return validFrom;
+    }
+
+    public void setValidFrom(LocalDate validFrom) {
+        this.validFrom = validFrom;
+    }
+
+    public LocalDate getValidTo() {
+        return validTo;
+    }
+
+    public void setValidTo(LocalDate validTo) {
+        this.validTo = validTo;
+    }
+
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
+    }
+
+    public String getRateType() {
+        return rateType;
+    }
+
+    public void setRateType(String rateType) {
+        this.rateType = rateType;
+    }
+
+    public RoomType getRoomType() {
+        return roomType;
+    }
+
+    public void setRoomType(RoomType roomType) {
+        this.roomType = roomType;
     }
 
     @Override
@@ -53,6 +123,5 @@ public class Rate implements Serializable {
     @Override
     public String toString() {
         return "entity.Rate[ id=" + rateId + " ]";
-    }
-    
+    }   
 }
