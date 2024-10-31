@@ -23,16 +23,16 @@ public class Employee implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long employeeId;
     
-    @Column(nullable = false)
+    @Column(length = 64, nullable = false)
     private String firstName;
 
-    @Column(nullable = false)
+    @Column(length = 64, nullable = false)
     private String lastName;
 
-    @Column(nullable = false, unique = true)
+    @Column(length = 64, nullable = false, unique = true)
     private String username;
 
-    @Column(nullable = false)
+    @Column(length = 64, nullable = false)
     private String password;
 
     private String role;
