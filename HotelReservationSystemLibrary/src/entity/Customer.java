@@ -9,17 +9,16 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.PrimaryKeyJoinColumn;
 
 /**
  *
  * @author josalyn
  */
 @Entity
-public class Customer implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+@PrimaryKeyJoinColumn(name = "guestId")
+public class Customer extends Guest implements Serializable {
+    
     private Long customerId;
 
     public Long getCustomerId() {
