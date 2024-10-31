@@ -5,10 +5,14 @@
 package entity;
 
 import java.io.Serializable;
+import java.time.LocalDate;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 
 /**
  *
@@ -21,6 +25,17 @@ public class RoomAllocation implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long roomAllocationId;
+    
+    @Column(nullable = false)
+    private LocalDate allocationDate;
+    
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "reservationId", nullable = false)
+    private Reservation reservation;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "roomId", nullable = false)
+    private Room room;
 
     public Long getRoomAllocationId() {
         return roomAllocationId;
@@ -28,6 +43,30 @@ public class RoomAllocation implements Serializable {
 
     public void setRoomAllocationId(Long roomAllocationId) {
         this.roomAllocationId = roomAllocationId;
+    }
+
+    public LocalDate getAllocationDate() {
+        return allocationDate;
+    }
+
+    public void setAllocationDate(LocalDate allocationDate) {
+        this.allocationDate = allocationDate;
+    }
+
+    public Reservation getReservation() {
+        return reservation;
+    }
+
+    public void setReservation(Reservation reservation) {
+        this.reservation = reservation;
+    }
+
+    public Room getRoom() {
+        return room;
+    }
+
+    public void setRoom(Room room) {
+        this.room = room;
     }
 
     @Override
