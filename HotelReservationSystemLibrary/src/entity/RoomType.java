@@ -23,7 +23,7 @@ public class RoomType implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long roomTypeId;
     
-    @Column(nullable = false)
+    @Column(length = 64, nullable = false)
     private String name;
 
     private String description;
