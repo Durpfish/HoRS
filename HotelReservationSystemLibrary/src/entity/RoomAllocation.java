@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package entity;
 
 import java.io.Serializable;
@@ -12,37 +8,49 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 import javax.persistence.ManyToOne;
 
-/**
- *
- * @author josalyn
- */
 @Entity
 public class RoomAllocation implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long roomAllocationId;
-    
+    private Long allocationId;
+
     @Column(nullable = false)
     private LocalDate allocationDate;
-    
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "reservationId", nullable = false)
-    private Reservation reservation;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "roomId", nullable = false)
     private Room room;
 
-    public Long getRoomAllocationId() {
-        return roomAllocationId;
+    @OneToOne(optional = false)
+    @JoinColumn(name = "reservationId", unique = true)
+    private Reservation reservation;
+
+    private String allocationExceptionReport; // Optional field to store allocation exceptions
+
+    // Constructors
+    public RoomAllocation() {
     }
 
-    public void setRoomAllocationId(Long roomAllocationId) {
-        this.roomAllocationId = roomAllocationId;
+    public RoomAllocation(LocalDate allocationDate, Room room, Reservation reservation, String allocationExceptionReport) {
+        this.allocationDate = allocationDate;
+        this.room = room;
+        this.reservation = reservation;
+        this.allocationExceptionReport = allocationExceptionReport;
+    }
+
+    // Getters and Setters
+    public Long getAllocationId() {
+        return allocationId;
+    }
+
+    public void setAllocationId(Long allocationId) {
+        this.allocationId = allocationId;
     }
 
     public LocalDate getAllocationDate() {
@@ -53,14 +61,6 @@ public class RoomAllocation implements Serializable {
         this.allocationDate = allocationDate;
     }
 
-    public Reservation getReservation() {
-        return reservation;
-    }
-
-    public void setReservation(Reservation reservation) {
-        this.reservation = reservation;
-    }
-
     public Room getRoom() {
         return room;
     }
@@ -69,29 +69,38 @@ public class RoomAllocation implements Serializable {
         this.room = room;
     }
 
+    public Reservation getReservation() {
+        return reservation;
+    }
+
+    public void setReservation(Reservation reservation) {
+        this.reservation = reservation;
+    }
+
+    public String getAllocationExceptionReport() {
+        return allocationExceptionReport;
+    }
+
+    public void setAllocationExceptionReport(String allocationExceptionReport) {
+        this.allocationExceptionReport = allocationExceptionReport;
+    }
+
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (roomAllocationId != null ? roomAllocationId.hashCode() : 0);
-        return hash;
+        return (allocationId != null ? allocationId.hashCode() : 0);
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the roomAllocationId fields are not set
         if (!(object instanceof RoomAllocation)) {
             return false;
         }
         RoomAllocation other = (RoomAllocation) object;
-        if ((this.roomAllocationId == null && other.roomAllocationId != null) || (this.roomAllocationId != null && !this.roomAllocationId.equals(other.roomAllocationId))) {
-            return false;
-        }
-        return true;
+        return (this.allocationId != null || other.allocationId == null) && (this.allocationId == null || this.allocationId.equals(other.allocationId));
     }
 
     @Override
     public String toString() {
-        return "entity.RoomAllocation[ id=" + roomAllocationId + " ]";
+        return "entity.RoomAllocation[ id=" + allocationId + " ]";
     }
-    
 }

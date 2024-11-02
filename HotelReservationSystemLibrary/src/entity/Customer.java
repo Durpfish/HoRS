@@ -1,57 +1,36 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package entity;
 
-import java.io.Serializable;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import javax.persistence.PrimaryKeyJoinColumn;
 
-/**
- *
- * @author josalyn
- */
 @Entity
-@PrimaryKeyJoinColumn(name = "guestId")
-public class Customer extends Guest implements Serializable {
-    
-    private Long customerId;
+@PrimaryKeyJoinColumn(name = "guestId") // Reuse guestId as primary key for Customer
+public class Customer extends Guest {
 
-    public Long getCustomerId() {
-        return customerId;
+    public Customer() {
     }
 
-    public void setCustomerId(Long customerId) {
-        this.customerId = customerId;
+    public Customer(String firstName, String lastName, String email, String phoneNumber, String passportNumber, String username, String password) {
+        super(firstName, lastName, email, phoneNumber, passportNumber, username, password);
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (customerId != null ? customerId.hashCode() : 0);
-        return hash;
+        return (getGuestId() != null ? getGuestId().hashCode() : 0);
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the customerId fields are not set
         if (!(object instanceof Customer)) {
             return false;
         }
         Customer other = (Customer) object;
-        if ((this.customerId == null && other.customerId != null) || (this.customerId != null && !this.customerId.equals(other.customerId))) {
-            return false;
-        }
-        return true;
+        return (this.getGuestId() != null || other.getGuestId() == null) && (this.getGuestId() == null || this.getGuestId().equals(other.getGuestId()));
     }
 
     @Override
     public String toString() {
-        return "entity.Customer[ id=" + customerId + " ]";
+        return "entity.Customer[ id=" + getGuestId() + " ]";
     }
-    
+
 }

@@ -1,10 +1,7 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package entity;
 
 import java.io.Serializable;
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -14,16 +11,14 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import util.enumeration.roomStatus;
 
-/**
- *
- * @author josalyn
- */
 @Entity
 public class Room implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long roomId;
@@ -31,8 +26,10 @@ public class Room implements Serializable {
     @Column(nullable = false, unique = true)
     private String roomNumber;
     
+    @Column(nullable = false)
     private int floorNumber;
     
+    @Column(nullable = false)
     private boolean disabled;
 
     @ManyToOne(optional = false)
@@ -40,7 +37,11 @@ public class Room implements Serializable {
     private RoomType roomType;
 
     @Enumerated(EnumType.STRING)
-    private roomStatus status; 
+    @Column(nullable = false)
+    private roomStatus status;
+
+    @OneToMany(mappedBy = "room")
+    private List<RoomAllocation> allocations;
 
     public Long getRoomId() {
         return roomId;

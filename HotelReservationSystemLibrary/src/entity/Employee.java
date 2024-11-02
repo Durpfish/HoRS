@@ -1,28 +1,24 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package entity;
 
 import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import util.enumeration.employeeRole;
 
-/**
- *
- * @author josalyn
- */
 @Entity
 public class Employee implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long employeeId;
-    
+
     @Column(length = 64, nullable = false)
     private String firstName;
 
@@ -32,11 +28,26 @@ public class Employee implements Serializable {
     @Column(length = 64, nullable = false, unique = true)
     private String username;
 
-    @Column(length = 64, nullable = false)
+    @Column(length = 128, nullable = false) // Increased length for hashed passwords
     private String password;
 
-    private String role;
+    @Enumerated(EnumType.STRING)
+    @Column(length = 32, nullable = false)
+    private employeeRole role; // Use existing EmployeeRole enum
 
+    // Constructors
+    public Employee() {
+    }
+
+    public Employee(String firstName, String lastName, String username, String password, employeeRole role) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.username = username;
+        this.password = password;
+        this.role = role;
+    }
+
+    // Getters and Setters
     public Long getEmployeeId() {
         return employeeId;
     }
@@ -77,37 +88,30 @@ public class Employee implements Serializable {
         this.password = password;
     }
 
-    public String getRole() {
+    public employeeRole getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(employeeRole role) {
         this.role = role;
     }
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (employeeId != null ? employeeId.hashCode() : 0);
-        return hash;
+        return (employeeId != null ? employeeId.hashCode() : 0);
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the employeeId fields are not set
         if (!(object instanceof Employee)) {
             return false;
         }
         Employee other = (Employee) object;
-        if ((this.employeeId == null && other.employeeId != null) || (this.employeeId != null && !this.employeeId.equals(other.employeeId))) {
-            return false;
-        }
-        return true;
+        return (this.employeeId != null || other.employeeId == null) && (this.employeeId == null || this.employeeId.equals(other.employeeId));
     }
 
     @Override
     public String toString() {
         return "entity.Employee[ id=" + employeeId + " ]";
     }
-    
 }

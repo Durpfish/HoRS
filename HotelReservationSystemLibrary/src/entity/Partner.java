@@ -1,28 +1,27 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package entity;
 
 import java.io.Serializable;
+import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 
 /**
- *
- * @author josalyn
+ * Represents a Partner in the hotel reservation system.
  */
 @Entity
 public class Partner implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long partnerId;
-    
+
     @Column(length = 64, nullable = false)
     private String name;
 
@@ -38,9 +37,26 @@ public class Partner implements Serializable {
     @Column(length = 64, nullable = false, unique = true)
     private String username;
 
-    @Column(length = 64, nullable = false)
+    @Column(length = 128, nullable = false) // Increased length for hashed passwords
     private String password;
 
+    @OneToMany(mappedBy = "partner", cascade = CascadeType.ALL)
+    private List<Reservation> reservations;
+
+    // Constructors
+    public Partner() {
+    }
+
+    public Partner(String name, String contactPerson, String email, String phone, String username, String password) {
+        this.name = name;
+        this.contactPerson = contactPerson;
+        this.email = email;
+        this.phone = phone;
+        this.username = username;
+        this.password = password;
+    }
+
+    // Getters and Setters
     public Long getPartnerId() {
         return partnerId;
     }
@@ -97,29 +113,31 @@ public class Partner implements Serializable {
         this.password = password;
     }
 
+    public List<Reservation> getReservations() {
+        return reservations;
+    }
+
+    public void setReservations(List<Reservation> reservations) {
+        this.reservations = reservations;
+    }
+
+    // hashCode, equals, toString
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (partnerId != null ? partnerId.hashCode() : 0);
-        return hash;
+        return (partnerId != null ? partnerId.hashCode() : 0);
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the partnerId fields are not set
         if (!(object instanceof Partner)) {
             return false;
         }
         Partner other = (Partner) object;
-        if ((this.partnerId == null && other.partnerId != null) || (this.partnerId != null && !this.partnerId.equals(other.partnerId))) {
-            return false;
-        }
-        return true;
+        return (this.partnerId != null || other.partnerId == null) && (this.partnerId == null || this.partnerId.equals(other.partnerId));
     }
 
     @Override
     public String toString() {
         return "entity.Partner[ id=" + partnerId + " ]";
     }
-    
 }

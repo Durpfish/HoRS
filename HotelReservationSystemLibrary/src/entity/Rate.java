@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package entity;
 
 import java.io.Serializable;
@@ -13,15 +9,15 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import util.enumeration.rateType;
 
-/**
- *
- * @author josalyn
- */
 @Entity
 public class Rate implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long rateId;
@@ -35,15 +31,31 @@ public class Rate implements Serializable {
     @Column(nullable = false)
     private LocalDate validTo;
     
-    private boolean disabled;
-    
     @Column(nullable = false)
-    private String rateType; // Standard, Seasonal, Promotion
-    
+    private boolean disabled;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private rateType rateType; // Use RateType enum for rate type
+
     @ManyToOne(optional = false)
     @JoinColumn(name = "roomTypeId")
     private RoomType roomType;
 
+    // Constructors
+    public Rate() {
+    }
+
+    public Rate(double ratePerNight, LocalDate validFrom, LocalDate validTo, boolean disabled, rateType rateType, RoomType roomType) {
+        this.ratePerNight = ratePerNight;
+        this.validFrom = validFrom;
+        this.validTo = validTo;
+        this.disabled = disabled;
+        this.rateType = rateType;
+        this.roomType = roomType;
+    }
+
+    // Getters and Setters
     public Long getRateId() {
         return rateId;
     }
@@ -84,11 +96,11 @@ public class Rate implements Serializable {
         this.disabled = disabled;
     }
 
-    public String getRateType() {
+    public rateType getRateType() {
         return rateType;
     }
 
-    public void setRateType(String rateType) {
+    public void setRateType(rateType rateType) {
         this.rateType = rateType;
     }
 
@@ -102,26 +114,20 @@ public class Rate implements Serializable {
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (rateId != null ? rateId.hashCode() : 0);
-        return hash;
+        return (rateId != null ? rateId.hashCode() : 0);
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the rateId fields are not set
         if (!(object instanceof Rate)) {
             return false;
         }
         Rate other = (Rate) object;
-        if ((this.rateId == null && other.rateId != null) || (this.rateId != null && !this.rateId.equals(other.rateId))) {
-            return false;
-        }
-        return true;
+        return (this.rateId != null || other.rateId == null) && (this.rateId == null || this.rateId.equals(other.rateId));
     }
 
     @Override
     public String toString() {
         return "entity.Rate[ id=" + rateId + " ]";
-    }   
+    }
 }

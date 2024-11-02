@@ -1,53 +1,70 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package entity;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
+import util.enumeration.reservationType;
 
-/**
- *
- * @author josalyn
- */
 @Entity
 public class Reservation implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reservationId;
-    
+
     @Column(nullable = false)
     private LocalDate checkInDate;
 
     @Column(nullable = false)
     private LocalDate checkOutDate;
-    
-    @Column(nullable = false)
-    private LocalDate reservationDate;
-    
-    private int numberOfGuests;
 
     @Column(nullable = false)
-    private String status; // Confirmed, Cancelled
-    
+    private LocalDate reservationDate;
+
+    @Column(nullable = false)
+    private int numberOfGuests;
+
     @ManyToOne(optional = false)
     @JoinColumn(name = "guestId")
-    private Guest guest;
+    private Guest guest; // Many-to-one relationship with Guest
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "roomTypeId")
-    private RoomType roomType;
+    private RoomType roomType; // Many-to-one relationship with RoomType
 
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "partnerId")
+    private Partner partner; // Optional relationship with Partner
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private reservationType reservationType; // Enum for ONLINE, WALK-IN, PARTNER
+
+    @OneToOne(mappedBy = "reservation")
+    private RoomAllocation roomAllocation; // One-to-one relationship with RoomAllocation
+
+    @ManyToOne
+    @JoinColumn(name = "allocatedRoomId")
+    private Room allocatedRoom; // New field to store the allocated room
+
+    // Constructors
+    public Reservation() {
+    }
+
+    public Reservation(LocalDate checkInDate, LocalDate checkOutDate, LocalDate reservationDate, int numberOfGuests, Guest guest, RoomType roomType, Partner partner, reservationType reservationType) {
+        this.checkInDate = checkInDate;
+        this.checkOutDate = checkOutDate;
+        this.reservationDate = reservationDate;
+        this.numberOfGuests = numberOfGuests;
+        this.guest = guest;
+        this.roomType = roomType;
+        this.partner = partner;
+        this.reservationType = reservationType;
+    }
+
+    // Getters and Setters
     public Long getReservationId() {
         return reservationId;
     }
@@ -88,14 +105,6 @@ public class Reservation implements Serializable {
         this.numberOfGuests = numberOfGuests;
     }
 
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
     public Guest getGuest() {
         return guest;
     }
@@ -112,29 +121,54 @@ public class Reservation implements Serializable {
         this.roomType = roomType;
     }
 
+    public Partner getPartner() {
+        return partner;
+    }
+
+    public void setPartner(Partner partner) {
+        this.partner = partner;
+    }
+
+    public reservationType getReservationType() {
+        return reservationType;
+    }
+
+    public void setReservationType(reservationType reservationType) {
+        this.reservationType = reservationType;
+    }
+
+    public RoomAllocation getRoomAllocation() {
+        return roomAllocation;
+    }
+
+    public void setRoomAllocation(RoomAllocation roomAllocation) {
+        this.roomAllocation = roomAllocation;
+    }
+
+    public Room getAllocatedRoom() {
+        return allocatedRoom;
+    }
+
+    public void setAllocatedRoom(Room allocatedRoom) {
+        this.allocatedRoom = allocatedRoom;
+    }
+
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (reservationId != null ? reservationId.hashCode() : 0);
-        return hash;
+        return (reservationId != null ? reservationId.hashCode() : 0);
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the reservationId fields are not set
         if (!(object instanceof Reservation)) {
             return false;
         }
         Reservation other = (Reservation) object;
-        if ((this.reservationId == null && other.reservationId != null) || (this.reservationId != null && !this.reservationId.equals(other.reservationId))) {
-            return false;
-        }
-        return true;
+        return (this.reservationId != null || other.reservationId == null) && (this.reservationId == null || this.reservationId.equals(other.reservationId));
     }
 
     @Override
     public String toString() {
         return "entity.Reservation[ id=" + reservationId + " ]";
     }
-    
 }

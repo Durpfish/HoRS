@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package entity;
 
 import java.io.Serializable;
@@ -11,18 +7,15 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
-/**
- *
- * @author josalyn
- */
 @Entity
 public class RoomType implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long roomTypeId;
-    
+
     @Column(length = 64, nullable = false)
     private String name;
 
@@ -37,9 +30,13 @@ public class RoomType implements Serializable {
     private String bedType; // e.g., Queen, King
 
     private String amenities;
-    
+
     private boolean disabled;
 
+    @Column(nullable = false, unique = true)
+    private Integer order; // New field for room type hierarchy
+
+    // Getters and Setters
     public Long getRoomTypeId() {
         return roomTypeId;
     }
@@ -104,6 +101,14 @@ public class RoomType implements Serializable {
         this.disabled = disabled;
     }
 
+    public Integer getOrder() {
+        return order;
+    }
+
+    public void setOrder(Integer order) {
+        this.order = order;
+    }
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -113,20 +118,15 @@ public class RoomType implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the roomTypeId fields are not set
         if (!(object instanceof RoomType)) {
             return false;
         }
         RoomType other = (RoomType) object;
-        if ((this.roomTypeId == null && other.roomTypeId != null) || (this.roomTypeId != null && !this.roomTypeId.equals(other.roomTypeId))) {
-            return false;
-        }
-        return true;
+        return (this.roomTypeId != null || other.roomTypeId == null) && (this.roomTypeId == null || this.roomTypeId.equals(other.roomTypeId));
     }
 
     @Override
     public String toString() {
         return "entity.RoomType[ id=" + roomTypeId + " ]";
     }
-    
 }
