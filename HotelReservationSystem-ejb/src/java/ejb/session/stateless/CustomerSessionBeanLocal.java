@@ -4,6 +4,7 @@
  */
 package ejb.session.stateless;
 
+import entity.Customer;
 import javax.ejb.Local;
 
 /**
@@ -12,5 +13,15 @@ import javax.ejb.Local;
  */
 @Local
 public interface CustomerSessionBeanLocal {
+
+    public void createCustomerAccount(Customer customer);
+
+    public void updateCustomerDetails(Customer customer);
+
+    public Customer findCustomerByEmail(String email);
+
+    public void deleteCustomer(Long customerId);
+
+    public Customer findCustomerByGuestId(Long guestId);
     
 }

@@ -4,6 +4,8 @@
  */
 package ejb.session.stateless;
 
+import entity.Employee;
+import java.util.List;
 import javax.ejb.Local;
 
 /**
@@ -12,5 +14,19 @@ import javax.ejb.Local;
  */
 @Local
 public interface EmployeeSessionBeanLocal {
-    
+
+    public void addEmployee(Employee employee);
+
+    public void removeEmployee(Long employeeId);
+
+    public void updateEmployeeDetails(Employee employee);
+
+    public List<Employee> getAllEmployees();
+
+    public Employee findEmployeeById(Long employeeId);
+
+    public Employee findEmployeeByUsername(String username);
+
+    public Employee loginEmployee(String username, String password);
+
 }

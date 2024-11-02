@@ -1,32 +1,64 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/J2EE/EJB30/StatelessEjbClass.java to edit this template
- */
 package ejb.session.stateless;
 
 import entity.Customer;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
-/**
- *
- * @author josalyn
- */
 @Stateless
 public class CustomerSessionBean implements CustomerSessionBeanRemote, CustomerSessionBeanLocal {
 
     @PersistenceContext(unitName = "HotelReservationSystem-ejbPU")
     private EntityManager em;
     
-    // Add business logic below. (Right-click in editor and choose
-    // "Insert Code > Add Business Method")
-    
+    @Override
     public void createCustomerAccount(Customer customer) {
-        em.persist(customer); // Customer extends Guest, so it will be saved to the same table
+        if (isEmailUnique(customer.getEmail())) {
+            em.persist(customer);
+        } else {
+            throw new IllegalArgumentException("Email is already in use.");
+        }
     }
 
+    @Override
     public void updateCustomerDetails(Customer customer) {
-        em.merge(customer); // Update existing customer details
+        if (isEmailUnique(customer.getEmail()) || isUpdatingOwnAccount(customer)) {
+            em.merge(customer);
+        } else {
+            throw new IllegalArgumentException("Email is already in use by another account.");
+        }
+    }
+
+    @Override
+    public Customer findCustomerByGuestId(Long guestId) {
+        return em.find(Customer.class, guestId);
+    }
+
+    @Override
+    public Customer findCustomerByEmail(String email) {
+        Query query = em.createQuery("SELECT c FROM Customer c WHERE c.email = :email");
+        query.setParameter("email", email);
+        return (Customer) query.getSingleResult();
+    }
+
+    @Override
+    public void deleteCustomer(Long guestId) {
+        Customer customer = findCustomerByGuestId(guestId);
+        if (customer != null) {
+            em.remove(customer);
+        }
+    }
+    
+    private boolean isEmailUnique(String email) {
+        Query query = em.createQuery("SELECT COUNT(c) FROM Customer c WHERE c.email = :email");
+        query.setParameter("email", email);
+        Long count = (Long) query.getSingleResult();
+        return count == 0;
+    }
+    
+    private boolean isUpdatingOwnAccount(Customer customer) {
+        Customer existingCustomer = findCustomerByGuestId(customer.getGuestId());
+        return existingCustomer != null && existingCustomer.getEmail().equals(customer.getEmail());
     }
 }

@@ -1,45 +1,84 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/J2EE/EJB30/StatelessEjbClass.java to edit this template
- */
 package ejb.session.stateless;
 
 import entity.Employee;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import util.enumeration.employeeRole;
+import javax.persistence.Query;
 
-/**
- *
- * @author josalyn
- */
 @Stateless
 public class EmployeeSessionBean implements EmployeeSessionBeanRemote, EmployeeSessionBeanLocal {
 
     @PersistenceContext(unitName = "HotelReservationSystem-ejbPU")
     private EntityManager em;
     
-    // Add business logic below. (Right-click in editor and choose
-    // "Insert Code > Add Business Method")
-    
+    @Override
     public void addEmployee(Employee employee) {
-        em.persist(employee); // Save the employee to the database
-    }
-
-    public void removeEmployee(Long employeeId) {
-        Employee employee = em.find(Employee.class, employeeId);
-        if (employee != null) {
-            em.remove(employee); // Delete the employee from the database
+        if (isUsernameUnique(employee.getUsername())) {
+            em.persist(employee);
+        } else {
+            throw new IllegalArgumentException("Username is already in use.");
         }
     }
 
-    public void updateEmployeeDetails(Employee employee) {
-        em.merge(employee); // Update employee details
+    @Override
+    public void removeEmployee(Long employeeId) {
+        Employee employee = findEmployeeById(employeeId);
+        if (employee != null) {
+            em.remove(employee);
+        }
     }
 
+    @Override
+    public void updateEmployeeDetails(Employee employee) {
+        if (isUsernameUnique(employee.getUsername()) || isUpdatingOwnAccount(employee)) {
+            em.merge(employee);
+        } else {
+            throw new IllegalArgumentException("Username is already in use by another account.");
+        }
+    }
+
+    @Override
     public List<Employee> getAllEmployees() {
         return em.createQuery("SELECT e FROM Employee e", Employee.class).getResultList();
+    }
+
+    @Override
+    public Employee findEmployeeById(Long employeeId) {
+        return em.find(Employee.class, employeeId);
+    }
+
+    @Override
+    public Employee findEmployeeByUsername(String username) {
+        try {
+            Query query = em.createQuery("SELECT e FROM Employee e WHERE e.username = :username", Employee.class);
+            query.setParameter("username", username);
+            return (Employee) query.getSingleResult();
+        } catch (NoResultException e) {
+            return null; // Return null if no employee is found
+        }
+    }
+
+    public Employee loginEmployee(String username, String password) {
+        Employee employee = findEmployeeByUsername(username);
+        if (employee != null && employee.getPassword().equals(password)) {
+            return employee; // Successful login
+        } else {
+            return null; // Invalid credentials
+        }
+    }
+
+    private boolean isUsernameUnique(String username) {
+        Query query = em.createQuery("SELECT COUNT(e) FROM Employee e WHERE e.username = :username");
+        query.setParameter("username", username);
+        Long count = (Long) query.getSingleResult();
+        return count == 0;
+    }
+    
+    private boolean isUpdatingOwnAccount(Employee employee) {
+        Employee existingEmployee = findEmployeeById(employee.getEmployeeId());
+        return existingEmployee != null && existingEmployee.getUsername().equals(employee.getUsername());
     }
 }
