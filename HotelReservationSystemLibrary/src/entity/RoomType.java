@@ -1,11 +1,13 @@
 package entity;
 
 import java.io.Serializable;
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 
 @Entity
 public class RoomType implements Serializable {
@@ -34,7 +36,10 @@ public class RoomType implements Serializable {
     private boolean disabled;
 
     @Column(nullable = false, unique = true)
-    private Integer order; // New field for room type hierarchy
+    private Integer roomOrder; // New field for room type hierarchy
+    
+    @OneToMany(mappedBy = "roomType")
+    private List<Room> rooms;
 
     // Getters and Setters
     public Long getRoomTypeId() {
@@ -101,12 +106,12 @@ public class RoomType implements Serializable {
         this.disabled = disabled;
     }
 
-    public Integer getOrder() {
-        return order;
+    public Integer getRoomOrder() {
+        return roomOrder;
     }
 
-    public void setOrder(Integer order) {
-        this.order = order;
+    public void setRoomOrder(Integer roomOrder) {
+        this.roomOrder = roomOrder;
     }
 
     @Override

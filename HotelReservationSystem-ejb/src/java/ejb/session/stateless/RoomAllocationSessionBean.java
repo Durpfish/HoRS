@@ -111,7 +111,7 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
     private RoomType getNextHigherRoomType(RoomType currentRoomType) {
         List<RoomType> higherRoomTypes = em.createQuery(
             "SELECT rt FROM RoomType rt WHERE rt.order > :currentOrder ORDER BY rt.order ASC", RoomType.class)
-            .setParameter("currentOrder", currentRoomType.getOrder())
+            .setParameter("currentOrder", currentRoomType.getRoomOrder())
             .setMaxResults(1)
             .getResultList();
 

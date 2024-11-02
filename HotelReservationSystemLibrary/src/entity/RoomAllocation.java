@@ -30,7 +30,7 @@ public class RoomAllocation implements Serializable {
     @OneToOne(optional = false)
     @JoinColumn(name = "reservationId", unique = true)
     private Reservation reservation;
-
+    
     private String allocationExceptionReport; // Optional field to store allocation exceptions
 
     // Constructors

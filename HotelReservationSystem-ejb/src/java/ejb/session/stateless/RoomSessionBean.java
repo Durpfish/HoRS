@@ -59,9 +59,9 @@ public class RoomSessionBean implements RoomSessionBeanRemote, RoomSessionBeanLo
     public void deleteRoom(Long roomId) {
         Room room = retrieveRoomById(roomId);
         if (room != null) {
-            long reservationCount = em.createQuery("SELECT COUNT(r) FROM Reservation r WHERE r.room.roomId = :roomId", Long.class)
-                                      .setParameter("roomId", roomId)
-                                      .getSingleResult();
+            long reservationCount = em.createQuery("SELECT COUNT(ra) FROM RoomAllocation ra WHERE ra.room.roomId = :roomId", Long.class)
+                          .setParameter("roomId", roomId)
+                          .getSingleResult();
             if (reservationCount > 0) {
                 throw new IllegalArgumentException("Cannot delete room as it is associated with existing reservations.");
             }
