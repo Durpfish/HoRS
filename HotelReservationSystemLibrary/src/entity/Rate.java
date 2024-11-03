@@ -25,10 +25,10 @@ public class Rate implements Serializable {
     @Column(nullable = false)
     private double ratePerNight;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private LocalDate validFrom;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private LocalDate validTo;
     
     @Column(nullable = false)

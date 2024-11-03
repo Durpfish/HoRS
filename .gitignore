@@ -1,0 +1,9 @@
+/HotelReservationSystemLibrary/dist/
+/HotelReservationSystemLibrary/build/
+/build/
+/ManagementClient/build/
+/ReservationClient/build/
+/HotelReservationSystem-ejb/dist/
+/ManagementClient/dist/
+/ReservationClient/dist/
+/dist/

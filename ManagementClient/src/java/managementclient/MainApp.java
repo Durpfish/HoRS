@@ -691,12 +691,17 @@ public class MainApp {
         int rateTypeChoice = scanner.nextInt();
         scanner.nextLine(); // Consume newline
         rateType selectedRateType = rateType.values()[rateTypeChoice - 1];
+        
+        LocalDate validFrom = null;
+        LocalDate validTo = null;
 
-        System.out.print("Enter validity start date (YYYY-MM-DD)> ");
-        LocalDate validFrom = LocalDate.parse(scanner.nextLine());
+        if (rateTypeChoice == 3 || rateTypeChoice == 4) { // 3 and 4 are peak and promotion
+            System.out.print("Enter validity start date (YYYY-MM-DD)> ");
+            validFrom = LocalDate.parse(scanner.nextLine());
 
-        System.out.print("Enter validity end date (YYYY-MM-DD)> ");
-        LocalDate validTo = LocalDate.parse(scanner.nextLine());
+            System.out.print("Enter validity end date (YYYY-MM-DD)> ");
+            validTo = LocalDate.parse(scanner.nextLine());
+        }
 
         System.out.println("Select Room Type:");
         List<RoomType> roomTypes = roomTypeSessionBean.retrieveAllRoomTypes();
@@ -764,19 +769,52 @@ public class MainApp {
             rate.setRateType(rateType.values()[rateTypeChoice - 1]);
         }
 
-        System.out.print("Enter new validity start date (or press Enter to keep current: " + rate.getValidFrom() + ")> ");
-        String validFromInput = scanner.nextLine();
-        if (!validFromInput.isEmpty()) {
-            LocalDate validFrom = LocalDate.parse(validFromInput);
-            rate.setValidFrom(validFrom);
-        }
+        if (rateTypeChoice == 3 || rateTypeChoice == 4) {
+        // Conditionally display "press Enter to keep current" only if current value is not null
+            String validFromPrompt = rate.getValidFrom() != null 
+                ? "Enter new validity start date (YYYY-MM-DD) (or press Enter to keep current: " + rate.getValidFrom() + ")> " 
+                : "Enter validity start date (YYYY-MM-DD)> ";
+        
+            System.out.print(validFromPrompt);
+            String validFromInput = scanner.nextLine();
+            if (!validFromInput.isEmpty()) {
+                LocalDate validFrom = LocalDate.parse(validFromInput);
+                rate.setValidFrom(validFrom);
+            }
 
-        System.out.print("Enter new validity end date (or press Enter to keep current: " + rate.getValidTo() + ")> ");
-        String validToInput = scanner.nextLine();
-        if (!validToInput.isEmpty()) {
-            LocalDate validTo = LocalDate.parse(validToInput);
-            rate.setValidTo(validTo);
-        }
+            String validToPrompt = rate.getValidTo() != null 
+                ? "Enter new validity end date (YYYY-MM-DD) (or press Enter to keep current: " + rate.getValidTo() + ")> "
+                : "Enter validity end date (YYYY-MM-DD)> ";
+        
+            System.out.print(validToPrompt);
+            String validToInput = scanner.nextLine();
+            if (!validToInput.isEmpty()) {
+                LocalDate validTo = LocalDate.parse(validToInput);
+                rate.setValidTo(validTo);
+            }
+        } else if (rateTypeChoice == 1 || rateTypeChoice == 2) {
+            // Set validity period to null for other rate types (1 or 2)
+            rate.setValidFrom(null);
+            rate.setValidTo(null);
+        } else {
+            // User chose to keep the current rate type
+            if ((rate.getRateType() == rateType.PEAK || rate.getRateType() == rateType.PROMOTION)) {
+                // Prompt to update validity period if the current rate type is 3 or 4 and dates are not null
+                System.out.print("Enter new validity start date (YYYY-MM-DD) (or press Enter to keep current: " + rate.getValidFrom() + ")> ");
+                String validFromInput = scanner.nextLine();
+                if (!validFromInput.isEmpty()) {
+                    LocalDate validFrom = LocalDate.parse(validFromInput);
+                    rate.setValidFrom(validFrom);
+                }
+
+                System.out.print("Enter new validity end date (YYYY-MM-DD) (or press Enter to keep current: " + rate.getValidTo() + ")> ");
+                String validToInput = scanner.nextLine();
+                if (!validToInput.isEmpty()) {
+                    LocalDate validTo = LocalDate.parse(validToInput);
+                    rate.setValidTo(validTo);
+                }
+            } 
+        }            
 
         rateSessionBean.updateRate(rate);
         System.out.println("Room rate updated successfully!");

@@ -36,15 +36,19 @@ public class RoomSessionBean implements RoomSessionBeanRemote, RoomSessionBeanLo
     }
 
     public List<Room> retrieveAvailableRooms() {
-        return em.createQuery("SELECT r FROM Room r WHERE r.status = 'AVAILABLE'", Room.class)
-                 .getResultList();
+        return em.createQuery("SELECT r FROM Room r WHERE r.status = :status", Room.class)
+             .setParameter("status", roomStatus.AVAILABLE) 
+             .getResultList();
     }
     
     public List<Room> retrieveAvailableRoomsForDates(LocalDate checkInDate, LocalDate checkOutDate) {
         return em.createQuery(
-                "SELECT r FROM Room r WHERE r.status = :status " +
-                "AND r.roomType IN (SELECT rt FROM RoomType rt WHERE rt.disabled = false) " + 
-                "AND r.roomId NOT IN (SELECT res.room.roomId FROM Reservation res " +
+                "SELECT r FROM Room r " +
+                "JOIN r.roomType rt " +
+                "WHERE r.status = :status " +
+                "AND rt.disabled = false " + 
+                "AND r.roomId NOT IN (SELECT ra.room.roomId FROM Reservation res " +
+                "JOIN res.roomAllocation ra " +
                 "WHERE res.checkOutDate > :checkInDate AND res.checkInDate < :checkOutDate)", Room.class)
                 .setParameter("status", roomStatus.AVAILABLE)
                 .setParameter("checkInDate", checkInDate)

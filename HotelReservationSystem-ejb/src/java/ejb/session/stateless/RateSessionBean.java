@@ -1,6 +1,7 @@
 package ejb.session.stateless;
 
 import entity.Rate;
+import entity.RoomType;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -37,7 +38,9 @@ public class RateSessionBean implements RateSessionBeanRemote, RateSessionBeanLo
     public Rate retrievePublishedRateForRoomType(Long roomTypeId) {
         try {
             return em.createQuery(
-                "SELECT r FROM Rate r WHERE r.roomType.roomTypeId = :roomTypeId AND r.rateType = :rateType AND r.disabled = false ORDER BY r.validFrom DESC", Rate.class)
+                "SELECT r FROM Rate r WHERE r.roomType.roomTypeId = :roomTypeId " +
+                "AND r.rateType = :rateType AND r.disabled = false " +
+                "ORDER BY CASE WHEN r.validFrom IS NULL THEN 1 ELSE 0 END, r.validFrom DESC", Rate.class)
                 .setParameter("roomTypeId", roomTypeId)
                 .setParameter("rateType", rateType.PUBLISHED)
                 .setMaxResults(1)
@@ -54,9 +57,11 @@ public class RateSessionBean implements RateSessionBeanRemote, RateSessionBeanLo
     public void deleteRate(Long rateId) {
         Rate rate = retrieveRateById(rateId);
         if (rate != null) {
-            long reservationCount = em.createQuery("SELECT COUNT(r) FROM Reservation r WHERE r.rate.rateId = :rateId", Long.class)
-                                      .setParameter("rateId", rateId)
-                                      .getSingleResult();
+            RoomType roomType = rate.getRoomType();
+            long reservationCount = em.createQuery("SELECT COUNT(r) FROM Reservation r WHERE r.roomType = :roomType AND r.rate = :rate", Long.class)
+                                                .setParameter("roomType", roomType)
+                                                .setParameter("rate", rate)
+                                                .getSingleResult();
             if (reservationCount > 0) {
                 throw new IllegalArgumentException("Cannot delete rate as it is associated with existing reservations.");
             }
