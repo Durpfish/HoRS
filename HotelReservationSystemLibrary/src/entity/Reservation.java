@@ -56,12 +56,19 @@ public class Reservation implements Serializable {
     public Reservation(LocalDate checkInDate, LocalDate checkOutDate, LocalDate reservationDate, int numberOfGuests, Guest guest, RoomType roomType, Partner partner, reservationType reservationType) {
         this.checkInDate = checkInDate;
         this.checkOutDate = checkOutDate;
-        this.reservationDate = reservationDate;
+        this.reservationDate = LocalDate.now();
         this.numberOfGuests = numberOfGuests;
         this.guest = guest;
         this.roomType = roomType;
         this.partner = partner;
         this.reservationType = reservationType;
+    }
+    
+    @PrePersist
+    protected void onCreate() {
+        if (this.reservationDate == null) {
+            this.reservationDate = LocalDate.now(); // Set to today's date by default
+        }
     }
 
     // Getters and Setters
