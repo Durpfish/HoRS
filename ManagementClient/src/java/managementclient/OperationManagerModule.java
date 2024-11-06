@@ -10,6 +10,7 @@ import ejb.session.stateless.RoomTypeSessionBeanRemote;
 import entity.Room;
 import entity.RoomAllocationExceptionReport;
 import entity.RoomType;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Scanner;
 import util.enumeration.roomStatus;
@@ -80,7 +81,8 @@ public class OperationManagerModule {
                     doViewAllRooms();
                     break;
                 case 10:
-                    doViewRoomAllocationExceptionReport();
+                    //doViewRoomAllocationExceptionReport();
+                    doManualRoomAllocation(); //for testing
                     break;
                 case 11:
                     System.out.println("Logging out...");
@@ -89,6 +91,24 @@ public class OperationManagerModule {
                     System.out.println("Invalid choice. Please try again.");
             }
         } while (choice != 11);
+    }
+
+    private void doManualRoomAllocation() {   //for testing 
+        System.out.println("*** Manual Room Allocation ***");
+        System.out.print("Enter date for room allocation (YYYY-MM-DD)> "); 
+        LocalDate allocationDate = LocalDate.parse(scanner.nextLine());
+        roomAllocationSessionBean.allocateRoomsForDate(allocationDate);        
+        System.out.println("Room allocation completed for date: " + allocationDate);
+        
+        //try {        
+            //LocalDate allocationDate = LocalDate.parse(scanner.nextLine());
+            //roomAllocationSessionBean.allocateRoomsForDate(allocationDate);        
+            //System.out.println("Room allocation completed for date: " + allocationDate);
+        //} catch (DateTimeParseException e) {        
+           // System.out.println("Invalid date format. Please enter in YYYY-MM-DD format.");
+        //} catch (Exception e) {        
+           // System.out.println("An error occurred during room allocation: " + e.getMessage());
+        //}
     }
     
     private void doCreateNewRoomType(Scanner scanner) {

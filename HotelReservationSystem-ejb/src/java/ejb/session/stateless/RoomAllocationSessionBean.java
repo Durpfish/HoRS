@@ -36,7 +36,7 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
     public void allocateRoomsForDate(LocalDate date) {
         // Retrieve reservations for the specified date, ordered by room type for priority handling.
         List<Reservation> reservations = em.createQuery(
-            "SELECT r FROM Reservation r WHERE r.checkInDate = :date ORDER BY r.roomType.order ASC", Reservation.class)
+            "SELECT r FROM Reservation r WHERE r.checkInDate = :date ORDER BY r.roomType.roomOrder ASC", Reservation.class)
             .setParameter("date", date)
             .getResultList();
 
@@ -110,7 +110,7 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
     // Retrieves the next higher room type based on the `order` field
     private RoomType getNextHigherRoomType(RoomType currentRoomType) {
         List<RoomType> higherRoomTypes = em.createQuery(
-            "SELECT rt FROM RoomType rt WHERE rt.order > :currentOrder ORDER BY rt.order ASC", RoomType.class)
+            "SELECT rt FROM RoomType rt WHERE rt.roomOrder > :currentOrder ORDER BY rt.roomOrder ASC", RoomType.class)
             .setParameter("currentOrder", currentRoomType.getRoomOrder())
             .setMaxResults(1)
             .getResultList();
