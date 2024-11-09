@@ -2,6 +2,7 @@ package ejb.session.stateless;
 
 import entity.Reservation;
 import entity.Room;
+import entity.RoomAllocation;
 import entity.RoomAllocationExceptionReport;
 import entity.RoomType;
 import javax.ejb.Schedule;
@@ -31,10 +32,8 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
         allocateRoomsForDate(today);
     }
 
-    // Allocates rooms for reservations on the specified date
     @Override
     public void allocateRoomsForDate(LocalDate date) {
-        // Retrieve reservations for the specified date, ordered by room type for priority handling.
         List<Reservation> reservations = em.createQuery(
             "SELECT r FROM Reservation r WHERE r.checkInDate = :date ORDER BY r.roomType.roomOrder ASC", Reservation.class)
             .setParameter("date", date)
@@ -44,44 +43,51 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
             Room allocatedRoom = findAvailableRoomOrUpgrade(reservation.getRoomType());
 
             if (allocatedRoom != null) {
-                reservation.setAllocatedRoom(allocatedRoom);
-                allocatedRoom.setStatus(roomStatus.UNAVAILABLE); // Mark room as unavailable
-                em.merge(reservation);
+                createRoomAllocation(reservation.getReservationId(), allocatedRoom.getRoomId());
+                allocatedRoom.setStatus(roomStatus.UNAVAILABLE);
                 em.merge(allocatedRoom);
 
-                // Log an upgrade allocation if the room type does not match the requested type.
                 if (!allocatedRoom.getRoomType().equals(reservation.getRoomType())) {
                     logRoomAllocationException(reservation, "Type 1: Room upgrade allocated to next higher tier.");
                 }
-
             } else {
-                // Log a Type 2 exception if no suitable room or upgrade is available.
                 logRoomAllocationException(reservation, "Type 2: No rooms available, manual handling required.");
             }
         }
     }
-    
+
     @Override
     public void allocateRoomForReservation(Reservation reservation) {
         Room allocatedRoom = findAvailableRoomOrUpgrade(reservation.getRoomType());
 
         if (allocatedRoom != null) {
-            reservation.setAllocatedRoom(allocatedRoom);
-            allocatedRoom.setStatus(roomStatus.UNAVAILABLE); // Mark room as unavailable
-            em.merge(reservation);
+            createRoomAllocation(reservation.getReservationId(), allocatedRoom.getRoomId());
+            allocatedRoom.setStatus(roomStatus.UNAVAILABLE);
             em.merge(allocatedRoom);
 
             if (!allocatedRoom.getRoomType().equals(reservation.getRoomType())) {
-                // Log an upgrade allocation as a "Type 1" exception
                 logRoomAllocationException(reservation, "Type 1: Room upgrade allocated to next higher tier.");
             }
         } else {
-            // Log a "Type 2" exception if no suitable room is available
             logRoomAllocationException(reservation, "Type 2: No rooms available, manual handling required.");
         }
     }
-    
-    // Tries to find an available room in the requested room type or the next higher tier
+
+    private void createRoomAllocation(Long reservationId, Long roomId) {
+        Reservation managedReservation = em.find(Reservation.class, reservationId);
+        Room managedRoom = em.find(Room.class, roomId);
+
+        if (managedReservation != null && managedRoom != null) {
+            RoomAllocation roomAllocation = new RoomAllocation();
+            roomAllocation.setAllocationDate(LocalDate.now());
+            roomAllocation.setRoom(managedRoom);
+            roomAllocation.setReservation(managedReservation);
+            em.persist(roomAllocation);
+        } else {
+            LOGGER.log(Level.WARNING, "Cannot create RoomAllocation as reservation or room is not found.");
+        }
+    }
+
     private Room findAvailableRoomOrUpgrade(RoomType requestedRoomType) {
         RoomType currentRoomType = requestedRoomType;
 
@@ -92,11 +98,10 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
             }
             currentRoomType = getNextHigherRoomType(currentRoomType);
         }
-        
-        return null; // No rooms available in the requested or higher tiers
+
+        return null;
     }
 
-    // Finds an available room in the specified room type
     private Room findAvailableRoom(RoomType roomType) {
         List<Room> availableRooms = em.createQuery(
             "SELECT r FROM Room r WHERE r.roomType = :roomType AND r.status = :status", Room.class)
@@ -107,7 +112,6 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
         return availableRooms.isEmpty() ? null : availableRooms.get(0);
     }
 
-    // Retrieves the next higher room type based on the `order` field
     private RoomType getNextHigherRoomType(RoomType currentRoomType) {
         List<RoomType> higherRoomTypes = em.createQuery(
             "SELECT rt FROM RoomType rt WHERE rt.roomOrder > :currentOrder ORDER BY rt.roomOrder ASC", RoomType.class)
@@ -118,17 +122,16 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
         return higherRoomTypes.isEmpty() ? null : higherRoomTypes.get(0);
     }
 
-    // Logs a room allocation exception by creating a RoomAllocationExceptionReport
     private void logRoomAllocationException(Reservation reservation, String message) {
         RoomAllocationExceptionReport exceptionReport = new RoomAllocationExceptionReport();
         exceptionReport.setReservation(reservation);
         exceptionReport.setMessage(message);
-        exceptionReport.setExceptionDate(LocalDate.now()); // Set the current date as exception date
+        exceptionReport.setExceptionDate(LocalDate.now());
         em.persist(exceptionReport);
 
         LOGGER.log(Level.WARNING, "Room allocation exception for reservation ID: {0} - {1}", new Object[]{reservation.getReservationId(), message});
     }
-    
+
     @Override
     public void handleManualRoomAllocationException(Long reservationId, String message) {
         Reservation reservation = em.find(Reservation.class, reservationId);
@@ -139,14 +142,13 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
         }
     }
 
-
-    // Retrieves all room allocation exceptions
     @Override
     public List<RoomAllocationExceptionReport> viewAllRoomAllocationExceptions() {
         return em.createQuery("SELECT e FROM RoomAllocationExceptionReport e", RoomAllocationExceptionReport.class)
                  .getResultList();
     }
 }
+
 
 //    public void allocateRoomsForDate(LocalDate date) {
 //        List<Reservation> reservations = em.createQuery(

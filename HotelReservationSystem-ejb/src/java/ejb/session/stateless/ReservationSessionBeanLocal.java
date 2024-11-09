@@ -1,6 +1,7 @@
 package ejb.session.stateless;
 
 import entity.Reservation;
+import java.time.LocalDate;
 import java.util.List;
 import javax.ejb.Local;
 
@@ -16,4 +17,6 @@ public interface ReservationSessionBeanLocal {
     void updateReservation(Reservation reservation);
 
     void deleteReservation(Long reservationId);
+
+    public void createWalkInReservations(List<Reservation> reservations, LocalDate checkInDate);
 }

@@ -8,6 +8,10 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import java.time.LocalDate;
+import javax.persistence.Column;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import util.enumeration.ExceptionType;
 
 @Entity
 public class RoomAllocationExceptionReport implements Serializable {
@@ -21,6 +25,11 @@ public class RoomAllocationExceptionReport implements Serializable {
     @ManyToOne(optional = false)
     @JoinColumn(nullable = false)
     private Reservation reservation;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ExceptionType exceptionType;
+
 
     private String message;
     private LocalDate exceptionDate;
@@ -86,6 +95,10 @@ public class RoomAllocationExceptionReport implements Serializable {
 
     @Override
     public String toString() {
-        return "entity.RoomAllocationExceptionReport[ id=" + reportId + " ]";
+        return "RoomAllocationExceptionReport[ id=" + reportId +
+               ", reservationId=" + (reservation != null ? reservation.getReservationId() : "null") +
+               ", message=" + message +
+               ", exceptionDate=" + exceptionDate + " ]";
     }
+
 }

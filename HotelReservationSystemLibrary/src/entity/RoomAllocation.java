@@ -1,5 +1,7 @@
 package entity;
 
+import entity.Reservation;
+import entity.Room;
 import java.io.Serializable;
 import java.time.LocalDate;
 import javax.persistence.Column;

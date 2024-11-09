@@ -28,32 +28,28 @@ public class Reservation implements Serializable {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "guestId")
-    private Guest guest; // Many-to-one relationship with Guest
+    private Guest guest;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "roomTypeId")
-    private RoomType roomType; // Many-to-one relationship with RoomType
+    private RoomType roomType;
 
     @ManyToOne(optional = true)
     @JoinColumn(name = "partnerId")
-    private Partner partner; // Optional relationship with Partner
+    private Partner partner;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private reservationType reservationType; // Enum for ONLINE, WALK-IN, PARTNER
+    private reservationType reservationType;
 
     @OneToOne(mappedBy = "reservation")
-    private RoomAllocation roomAllocation; // One-to-one relationship with RoomAllocation
-
-    @ManyToOne
-    @JoinColumn(name = "allocatedRoomId")
-    private Room allocatedRoom; // New field to store the allocated room
+    private RoomAllocation roomAllocation;
 
     // Constructors
     public Reservation() {
     }
 
-    public Reservation(LocalDate checkInDate, LocalDate checkOutDate, LocalDate reservationDate, int numberOfGuests, Guest guest, RoomType roomType, Partner partner, reservationType reservationType) {
+    public Reservation(LocalDate checkInDate, LocalDate checkOutDate, int numberOfGuests, Guest guest, RoomType roomType, Partner partner, reservationType reservationType) {
         this.checkInDate = checkInDate;
         this.checkOutDate = checkOutDate;
         this.reservationDate = LocalDate.now();
@@ -67,7 +63,7 @@ public class Reservation implements Serializable {
     @PrePersist
     protected void onCreate() {
         if (this.reservationDate == null) {
-            this.reservationDate = LocalDate.now(); // Set to today's date by default
+            this.reservationDate = LocalDate.now();
         }
     }
 
@@ -150,14 +146,6 @@ public class Reservation implements Serializable {
 
     public void setRoomAllocation(RoomAllocation roomAllocation) {
         this.roomAllocation = roomAllocation;
-    }
-
-    public Room getAllocatedRoom() {
-        return allocatedRoom;
-    }
-
-    public void setAllocatedRoom(Room allocatedRoom) {
-        this.allocatedRoom = allocatedRoom;
     }
 
     @Override
