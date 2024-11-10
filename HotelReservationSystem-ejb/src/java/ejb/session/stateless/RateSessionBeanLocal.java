@@ -1,6 +1,8 @@
 package ejb.session.stateless;
 
 import entity.Rate;
+import entity.RoomType;
+import java.time.LocalDate;
 import java.util.List;
 import javax.ejb.Local;
 
@@ -20,4 +22,8 @@ public interface RateSessionBeanLocal {
     void deleteRate(Long rateId);
 
     public Rate retrievePublishedRateForRoomType(Long roomTypeId);
+
+    public Rate retrieveApplicableRate(RoomType roomType, LocalDate date);
+
+    public double calculateReservationAmount(RoomType roomType, LocalDate checkInDate, LocalDate checkOutDate);
 }

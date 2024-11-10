@@ -1,7 +1,8 @@
 package ejb.session.stateless;
 
 import entity.Reservation;
-import entity.RoomAllocationExceptionReport;
+import entity.Rate;
+import entity.RoomType;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -18,7 +19,11 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
 
     @EJB
     private RoomAllocationSessionBeanLocal roomAllocationSessionBean;
+    
+    @EJB
+    private RateSessionBeanLocal rateSessionBean;
 
+    // Existing createReservation method
     public Long createReservation(Reservation reservation) {
         em.persist(reservation);
         em.flush();
@@ -44,7 +49,7 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
         }
     }
 
-    // New method to create walk-in reservations and handle immediate allocation if necessary
+    // Walk-in reservations with immediate allocation if necessary
     public void createWalkInReservations(List<Reservation> reservations, LocalDate checkInDate) {
         for (Reservation reservation : reservations) {
             em.persist(reservation);
@@ -52,11 +57,40 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
         }
 
         // Check if immediate allocation is needed for same-day check-in after 2 AM
-        LocalTime currentTime = LocalTime.now();
-        if (checkInDate.equals(LocalDate.now()) && currentTime.isAfter(LocalTime.of(2, 0))) {
+        if (isImmediateAllocationNeeded(checkInDate)) {
             for (Reservation reservation : reservations) {
                 roomAllocationSessionBean.allocateRoomForReservation(reservation);
             }
         }
+    }
+    
+    // New method for creating online reservations with rate hierarchy consideration
+    @Override
+    public Long createOnlineReservation(Reservation reservationDetails, LocalDate checkInDate, LocalDate checkOutDate) {
+        RoomType roomType = reservationDetails.getRoomType();
+
+        // Get the applicable rate (Promotion > Peak > Normal)
+        Rate rate = rateSessionBean.retrieveApplicableRate(roomType, checkInDate);
+        if (rate == null) {
+            throw new IllegalArgumentException("No applicable rate found for the selected room type.");
+        }
+
+        // Calculate the total amount based on the rate
+        long nights = checkOutDate.toEpochDay() - checkInDate.toEpochDay();
+        reservationDetails.setTotalAmount(rate.getRatePerNight() * nights);
+
+        // Persist the reservation
+        em.persist(reservationDetails);
+        em.flush();
+
+        // Room allocation is deferred until batch job runs
+        return reservationDetails.getReservationId();
+    }
+    
+    // Helper method to determine if immediate allocation is required for same-day check-in after 2 AM
+    private boolean isImmediateAllocationNeeded(LocalDate checkInDate) {
+        LocalDate today = LocalDate.now();
+        LocalTime currentTime = LocalTime.now();
+        return checkInDate.equals(today) && currentTime.isAfter(LocalTime.of(2, 0));
     }
 }

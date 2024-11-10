@@ -29,5 +29,9 @@ public interface GuestSessionBeanLocal {
     void updateGuestDetails(Guest guest);
 
     void deleteGuest(Long guestId);
+
+    public Guest findGuestById(Long guestId);
+
+    public Reservation viewReservationDetails(Long reservationId);
     
 }

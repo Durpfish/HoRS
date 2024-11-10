@@ -1,20 +1,29 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
- */
 package reservationclient;
 
-/**
- *
- * @author josalyn
- */
-public class Main {
+import ejb.session.stateless.*;
+import javax.ejb.EJB;
 
-    /**
-     * @param args the command line arguments
-     */
+public class Main {
+    @EJB
+    private static GuestSessionBeanRemote guestSessionBean;
+
+    @EJB
+    private static RoomTypeSessionBeanRemote roomTypeSessionBean;
+
+    @EJB
+    private static RoomSessionBeanRemote roomSessionBean;
+
+    @EJB
+    private static RateSessionBeanRemote rateSessionBean;
+
+    @EJB
+    private static ReservationSessionBeanRemote reservationSessionBean;
+
+    @EJB
+    private static RoomAllocationSessionBeanRemote roomAllocationSessionBean;
+
     public static void main(String[] args) {
-        // TODO code application logic here
+        MainApp mainApp = new MainApp(guestSessionBean, roomTypeSessionBean, roomSessionBean, rateSessionBean, reservationSessionBean, roomAllocationSessionBean);
+        mainApp.run();
     }
-    
 }

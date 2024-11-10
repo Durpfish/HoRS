@@ -26,4 +26,6 @@ public interface RoomAllocationSessionBeanRemote {
     public void allocateRoomForReservation(Reservation reservation);
     
     public void handleManualRoomAllocationException(Long reservationId, String message);
+    
+    public void allocateRoomsForOnlineReservation(Reservation reservation);
 }

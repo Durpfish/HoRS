@@ -1,6 +1,7 @@
 package ejb.session.stateless;
 
 import entity.RoomType;
+import java.time.LocalDate;
 import java.util.List;
 import javax.ejb.Remote;
 
@@ -13,7 +14,7 @@ public interface RoomTypeSessionBeanRemote {
 
     List<RoomType> retrieveAllRoomTypes();
 
-    List<RoomType> retrieveAvailableRoomTypes();
+    public List<RoomType> retrieveAvailableRoomTypes(LocalDate checkInDate, LocalDate checkOutDate);
 
     void updateRoomType(RoomType roomType);
 

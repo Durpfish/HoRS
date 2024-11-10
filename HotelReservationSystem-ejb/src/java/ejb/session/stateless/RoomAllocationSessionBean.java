@@ -149,6 +149,26 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
         return em.createQuery("SELECT e FROM RoomAllocationExceptionReport e", RoomAllocationExceptionReport.class)
                  .getResultList();
     }
+    
+    public void allocateRoomsForOnlineReservation(Reservation reservation) {
+        Room allocatedRoom = findAvailableRoomOrUpgrade(reservation.getRoomType());
+
+        if (allocatedRoom != null) {
+            RoomAllocation roomAllocation = new RoomAllocation();
+            roomAllocation.setAllocationDate(LocalDate.now());
+            roomAllocation.setRoom(allocatedRoom);
+            roomAllocation.setReservation(reservation);
+
+            // Persist RoomAllocation without marking room as unavailable immediately for online flow.
+            em.persist(roomAllocation);
+
+            if (!allocatedRoom.getRoomType().equals(reservation.getRoomType())) {
+                logRoomAllocationException(reservation, "Room upgrade allocated to next higher tier.", ExceptionType.UPGRADE_ALLOCATED);
+            }
+        } else {
+            logRoomAllocationException(reservation, "No rooms available, manual handling required.", ExceptionType.NO_ROOM_AVAILABLE);
+        }
+    }
 }
 
 

@@ -1,6 +1,7 @@
 package ejb.session.stateless;
 
 import entity.RoomType;
+import java.time.LocalDate;
 import java.util.List;
 import javax.ejb.Local;
 
@@ -13,9 +14,9 @@ public interface RoomTypeSessionBeanLocal {
 
     List<RoomType> retrieveAllRoomTypes();
 
-    List<RoomType> retrieveAvailableRoomTypes();
-
     void updateRoomType(RoomType roomType);
 
     void deleteRoomType(Long roomTypeId);
+
+    public List<RoomType> retrieveAvailableRoomTypes(LocalDate checkInDate, LocalDate checkOutDate);
 }

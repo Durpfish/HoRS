@@ -72,4 +72,40 @@ public class RoomSessionBean implements RoomSessionBeanRemote, RoomSessionBeanLo
             em.remove(room);
         }
     }
+    
+    public boolean hasAvailableRooms(RoomType roomType, LocalDate checkInDate, LocalDate checkOutDate) {
+        List<Room> availableRooms = em.createQuery(
+                "SELECT r FROM Room r " +
+                "WHERE r.roomType = :roomType " +
+                "AND r.status = :status " +
+                "AND r.roomId NOT IN (" +
+                "    SELECT ra.room.roomId FROM Reservation res " +
+                "    JOIN res.roomAllocation ra " +
+                "    WHERE res.checkOutDate > :checkInDate AND res.checkInDate < :checkOutDate" +
+                ")", Room.class)
+                .setParameter("roomType", roomType)
+                .setParameter("status", roomStatus.AVAILABLE)
+                .setParameter("checkInDate", checkInDate)
+                .setParameter("checkOutDate", checkOutDate)
+                .getResultList();
+
+        return !availableRooms.isEmpty();
+    }   
+    
+    public List<Room> retrieveAvailableRoomsForRoomType(RoomType roomType, LocalDate checkInDate, LocalDate checkOutDate) {
+        return em.createQuery(
+                "SELECT r FROM Room r " +
+                "WHERE r.roomType = :roomType " +
+                "AND r.status = :status " +
+                "AND r.roomId NOT IN (" +
+                "    SELECT ra.room.roomId FROM Reservation res " +
+                "    JOIN res.roomAllocation ra " +
+                "    WHERE res.checkOutDate > :checkInDate AND res.checkInDate < :checkOutDate" +
+                ")", Room.class)
+                .setParameter("roomType", roomType)
+                .setParameter("status", roomStatus.AVAILABLE)
+                .setParameter("checkInDate", checkInDate)
+                .setParameter("checkOutDate", checkOutDate)
+                .getResultList();
+    }
 }

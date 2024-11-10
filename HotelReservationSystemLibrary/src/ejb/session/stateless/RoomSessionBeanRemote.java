@@ -24,4 +24,8 @@ public interface RoomSessionBeanRemote {
     void deleteRoom(Long roomId);
     
     public List<Room> retrieveAvailableRoomsForDates(LocalDate checkInDate, LocalDate checkOutDate);
+    
+    public boolean hasAvailableRooms(RoomType roomType, LocalDate checkInDate, LocalDate checkOutDate);
+    
+    public List<Room> retrieveAvailableRoomsForRoomType(RoomType roomType, LocalDate checkInDate, LocalDate checkOutDate);
 }

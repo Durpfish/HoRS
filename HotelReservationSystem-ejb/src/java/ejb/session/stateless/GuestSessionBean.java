@@ -57,6 +57,16 @@ public class GuestSessionBean implements GuestSessionBeanRemote, GuestSessionBea
                  .setParameter("username", username)
                  .getSingleResult();
     }
+    
+    public Guest findGuestById(Long guestId) {
+        return em.find(Guest.class, guestId);
+    }
+    
+    public Reservation viewReservationDetails(Long reservationId) {
+        return em.find(Reservation.class, reservationId);
+    }
+
+
 
     @Override
     public void updateGuestDetails(Guest guest) {

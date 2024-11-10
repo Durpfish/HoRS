@@ -42,8 +42,11 @@ public class Reservation implements Serializable {
     @Column(nullable = false)
     private reservationType reservationType;
 
-    @OneToOne(mappedBy = "reservation")
+    @OneToOne(mappedBy = "reservation", cascade = CascadeType.PERSIST)
     private RoomAllocation roomAllocation;
+    
+    @Column(nullable = false)
+    private double totalAmount;
 
     // Constructors
     public Reservation() {
@@ -146,6 +149,14 @@ public class Reservation implements Serializable {
 
     public void setRoomAllocation(RoomAllocation roomAllocation) {
         this.roomAllocation = roomAllocation;
+    }
+    
+    public double getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(double totalAmount) {
+        this.totalAmount = totalAmount;
     }
 
     @Override

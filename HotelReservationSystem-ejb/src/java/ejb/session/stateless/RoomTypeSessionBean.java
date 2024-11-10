@@ -1,15 +1,23 @@
 package ejb.session.stateless;
 
 import entity.RoomType;
+import java.time.LocalDate;
+import java.util.Collections;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.List;
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
+import util.enumeration.roomStatus;
+
 
 @Stateless
 public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeSessionBeanLocal {
 
+    @EJB
+    private RoomSessionBeanLocal roomSessionBean;
+    
     @PersistenceContext(unitName = "HotelReservationSystem-ejbPU")
     private EntityManager em;
 
@@ -27,10 +35,24 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
         return em.createQuery("SELECT rt FROM RoomType rt", RoomType.class).getResultList();
     }
 
-    public List<RoomType> retrieveAvailableRoomTypes() {
-        return em.createQuery("SELECT rt FROM RoomType rt WHERE rt.disabled = false", RoomType.class)
-                 .getResultList();
+   public List<RoomType> retrieveAvailableRoomTypes(LocalDate checkInDate, LocalDate checkOutDate) {
+        List<RoomType> availableRoomTypes = em.createQuery(
+            "SELECT rt FROM RoomType rt WHERE rt.disabled = false " +
+            "AND EXISTS (SELECT r FROM Room r WHERE r.roomType = rt AND r.status = :status " +
+            "AND r.roomId NOT IN (" +
+            "    SELECT ra.room.roomId FROM Reservation res " +
+            "    JOIN res.roomAllocation ra " +
+            "    WHERE res.checkOutDate > :checkInDate AND res.checkInDate < :checkOutDate" +
+            "))", RoomType.class)
+            .setParameter("status", roomStatus.AVAILABLE)
+            .setParameter("checkInDate", checkInDate)
+            .setParameter("checkOutDate", checkOutDate)
+            .getResultList();
+
+        // Ensure an empty list is returned if no results are found, instead of null
+        return availableRoomTypes != null ? availableRoomTypes : Collections.emptyList();
     }
+
 
     public void updateRoomType(RoomType roomType) {
         em.merge(roomType);

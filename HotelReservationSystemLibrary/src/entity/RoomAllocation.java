@@ -4,6 +4,7 @@ import entity.Reservation;
 import entity.Room;
 import java.io.Serializable;
 import java.time.LocalDate;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -29,7 +30,7 @@ public class RoomAllocation implements Serializable {
     @JoinColumn(name = "roomId", nullable = false)
     private Room room;
 
-    @OneToOne(optional = false)
+    @OneToOne(optional = false, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "reservationId", unique = true)
     private Reservation reservation;
     

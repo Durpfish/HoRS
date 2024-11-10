@@ -19,4 +19,6 @@ public interface ReservationSessionBeanLocal {
     void deleteReservation(Long reservationId);
 
     public void createWalkInReservations(List<Reservation> reservations, LocalDate checkInDate);
+
+    public Long createOnlineReservation(Reservation reservationDetails, LocalDate checkInDate, LocalDate checkOutDate);
 }
