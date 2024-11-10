@@ -82,7 +82,7 @@ public class OperationManagerModule {
                     doViewAllRooms();
                     break;
                 case 10:
-                    doViewRoomAllocationExceptionReport();
+                    //doViewRoomAllocationExceptionReport();
                     doManualRoomAllocation(); //for testing
                     break;
                 case 11:
@@ -107,6 +107,7 @@ public class OperationManagerModule {
         } catch (DateTimeParseException e) {
             System.out.println("Invalid date format. Please enter in YYYY-MM-DD format.");
         } catch (Exception e) {
+            e.printStackTrace();
             System.out.println("An error occurred during room allocation: " + e.getMessage());
         }
     }

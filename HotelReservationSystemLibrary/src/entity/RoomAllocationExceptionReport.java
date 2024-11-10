@@ -30,7 +30,6 @@ public class RoomAllocationExceptionReport implements Serializable {
     @Column(nullable = false)
     private ExceptionType exceptionType;
 
-
     private String message;
     private LocalDate exceptionDate;
 
@@ -38,8 +37,9 @@ public class RoomAllocationExceptionReport implements Serializable {
     public RoomAllocationExceptionReport() {
     }
 
-    public RoomAllocationExceptionReport(Reservation reservation, String message, LocalDate exceptionDate) {
+    public RoomAllocationExceptionReport(Reservation reservation, ExceptionType exceptionType, String message, LocalDate exceptionDate) {
         this.reservation = reservation;
+        this.exceptionType = exceptionType;
         this.message = message;
         this.exceptionDate = exceptionDate;
     }
@@ -75,6 +75,14 @@ public class RoomAllocationExceptionReport implements Serializable {
 
     public void setExceptionDate(LocalDate exceptionDate) {
         this.exceptionDate = exceptionDate;
+    }
+
+    public ExceptionType getExceptionType() {
+        return exceptionType;
+    }
+
+    public void setExceptionType(ExceptionType exceptionType) {
+        this.exceptionType = exceptionType;
     }
 
     @Override

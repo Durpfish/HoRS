@@ -5,6 +5,7 @@ import entity.Room;
 import entity.RoomAllocation;
 import entity.RoomAllocationExceptionReport;
 import entity.RoomType;
+import util.enumeration.ExceptionType;
 import javax.ejb.Schedule;
 import javax.ejb.Stateless;
 import javax.ejb.Timer;
@@ -24,7 +25,6 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
 
     private static final Logger LOGGER = Logger.getLogger(RoomAllocationSessionBean.class.getName());
 
-    // Scheduled task to run daily at 2 am
     @Schedule(hour = "2", minute = "0", persistent = false)
     @Override
     public void allocateRoomsDaily(Timer timer) {
@@ -48,10 +48,10 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
                 em.merge(allocatedRoom);
 
                 if (!allocatedRoom.getRoomType().equals(reservation.getRoomType())) {
-                    logRoomAllocationException(reservation, "Type 1: Room upgrade allocated to next higher tier.");
+                    logRoomAllocationException(reservation, "Room upgrade allocated to next higher tier.", ExceptionType.UPGRADE_ALLOCATED);
                 }
             } else {
-                logRoomAllocationException(reservation, "Type 2: No rooms available, manual handling required.");
+                logRoomAllocationException(reservation, "No rooms available, manual handling required.", ExceptionType.NO_ROOM_AVAILABLE);
             }
         }
     }
@@ -66,10 +66,10 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
             em.merge(allocatedRoom);
 
             if (!allocatedRoom.getRoomType().equals(reservation.getRoomType())) {
-                logRoomAllocationException(reservation, "Type 1: Room upgrade allocated to next higher tier.");
+                logRoomAllocationException(reservation, "Room upgrade allocated to next higher tier.", ExceptionType.UPGRADE_ALLOCATED);
             }
         } else {
-            logRoomAllocationException(reservation, "Type 2: No rooms available, manual handling required.");
+            logRoomAllocationException(reservation, "No rooms available, manual handling required.", ExceptionType.NO_ROOM_AVAILABLE);
         }
     }
 
@@ -122,21 +122,23 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
         return higherRoomTypes.isEmpty() ? null : higherRoomTypes.get(0);
     }
 
-    private void logRoomAllocationException(Reservation reservation, String message) {
+    private void logRoomAllocationException(Reservation reservation, String message, ExceptionType exceptionType) {
         RoomAllocationExceptionReport exceptionReport = new RoomAllocationExceptionReport();
         exceptionReport.setReservation(reservation);
         exceptionReport.setMessage(message);
         exceptionReport.setExceptionDate(LocalDate.now());
+        exceptionReport.setExceptionType(exceptionType);  // Set the required exceptionType
         em.persist(exceptionReport);
 
-        LOGGER.log(Level.WARNING, "Room allocation exception for reservation ID: {0} - {1}", new Object[]{reservation.getReservationId(), message});
+        LOGGER.log(Level.WARNING, "Room allocation exception for reservation ID: {0} - {1} - {2}", 
+                  new Object[]{reservation.getReservationId(), exceptionType, message});
     }
 
     @Override
     public void handleManualRoomAllocationException(Long reservationId, String message) {
         Reservation reservation = em.find(Reservation.class, reservationId);
         if (reservation != null) {
-            logRoomAllocationException(reservation, message);
+            logRoomAllocationException(reservation, message, ExceptionType.MANUAL_HANDLING);
         } else {
             LOGGER.log(Level.WARNING, "No reservation found with ID: {0}. Cannot log exception.", reservationId);
         }

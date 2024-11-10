@@ -10,5 +10,6 @@ package util.enumeration;
  */
 public enum ExceptionType {
     NO_ROOM_AVAILABLE,
-    UPGRADE_ALLOCATED   
+    UPGRADE_ALLOCATED,
+    MANUAL_HANDLING
 }
