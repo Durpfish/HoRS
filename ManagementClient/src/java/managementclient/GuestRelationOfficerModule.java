@@ -16,7 +16,9 @@ import entity.RoomType;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import util.enumeration.reservationType;
 import util.enumeration.roomStatus;
@@ -78,116 +80,191 @@ public class GuestRelationOfficerModule {
     }
     
     private void doWalkInSearchRoom() {
-    System.out.println("*** Walk-in Room Search ***");
+        System.out.println("*** Walk-in Room Search ***");
 
-    System.out.print("Enter check-in date (YYYY-MM-DD)> ");
-    LocalDate checkInDate = LocalDate.parse(scanner.nextLine());
+        System.out.print("Enter check-in date (YYYY-MM-DD)> ");
+        LocalDate checkInDate = LocalDate.parse(scanner.nextLine());
 
-    System.out.print("Enter check-out date (YYYY-MM-DD)> ");
-    LocalDate checkOutDate = LocalDate.parse(scanner.nextLine());
+        System.out.print("Enter check-out date (YYYY-MM-DD)> ");
+        LocalDate checkOutDate = LocalDate.parse(scanner.nextLine());
 
-    // Retrieve available rooms based on room allocation and availability dates
-    List<Room> availableRooms = roomSessionBean.retrieveAvailableRoomsForDates(checkInDate, checkOutDate);
+        // Retrieve available rooms based on room allocation and availability dates
+        List<Room> availableRooms = roomSessionBean.retrieveAvailableRoomsForDates(checkInDate, checkOutDate);
 
-    System.out.println("\nAvailable Rooms:");
-    for (Room room : availableRooms) {
-        RoomType roomType = room.getRoomType();
+        System.out.println("\nAvailable Rooms:");
+        for (Room room : availableRooms) {
+            RoomType roomType = room.getRoomType();
 
-        // Fetch the published rate for this room type
-        Rate publishedRate = rateSessionBean.retrievePublishedRateForRoomType(roomType.getRoomTypeId());
+            // Fetch the published rate for this room type
+            Rate publishedRate = rateSessionBean.retrievePublishedRateForRoomType(roomType.getRoomTypeId());
 
-        if (publishedRate != null) {
-            double totalCost = publishedRate.getRatePerNight() * (checkOutDate.toEpochDay() - checkInDate.toEpochDay());
-            System.out.printf("Room ID: %d, Room Type: %s, Rate Per Night: %.2f, Total Cost: %.2f\n",
+            if (publishedRate != null) {
+                double totalCost = publishedRate.getRatePerNight() * (checkOutDate.toEpochDay() - checkInDate.toEpochDay());
+                System.out.printf("Room ID: %d, Room Type: %s, Rate Per Night: %.2f, Total Cost: %.2f\n",
                               room.getRoomId(), roomType.getName(), publishedRate.getRatePerNight(), totalCost);
-        } else {
-            System.out.printf("Room ID: %d, Room Type: %s, Rate information not available.\n",
+            } else {
+                System.out.printf("Room ID: %d, Room Type: %s, Rate information not available.\n",
                               room.getRoomId(), roomType.getName());
+            }
         }
     }
-}
-
     
-   private void doWalkInReserveRoom() {
-    System.out.println("*** Walk-in Reserve Room ***");
-
-    // Step 1: Get check-in and check-out dates
-    System.out.print("Enter check-in date (YYYY-MM-DD)> ");
-    LocalDate checkInDate = LocalDate.parse(scanner.nextLine());
-
-    System.out.print("Enter check-out date (YYYY-MM-DD)> ");
-    LocalDate checkOutDate = LocalDate.parse(scanner.nextLine());
-
-    int numberOfRooms;
-    // Step 2: Specify number of rooms
-    while (true) {
-        System.out.print("Enter the number of rooms to reserve> ");
-        numberOfRooms = scanner.nextInt();
-        scanner.nextLine(); // Consume newline
-
-        // Check if the number of rooms is valid
-        if (numberOfRooms <= 0) {
-            System.out.println("Please enter a valid number of rooms to reserve (greater than 0).");
-        } else {
-            break;
+    
+    private void doWalkInReserveRoom() {
+        System.out.println("*** Walk-in Room Reservation ***");
+    
+        // Step 1: Get and validate dates
+        System.out.print("Enter check-in date (YYYY-MM-DD)> ");
+        LocalDate checkInDate = LocalDate.parse(scanner.nextLine());
+    
+        System.out.print("Enter check-out date (YYYY-MM-DD)> ");
+        LocalDate checkOutDate = LocalDate.parse(scanner.nextLine());
+            
+        // Validate dates
+        LocalDate today = LocalDate.now();
+        if (checkInDate.isBefore(today)) {
+            System.out.println("Check-in date cannot be in the past.");
+            return;
         }
-    }
-
-    // Step 3: Check available rooms based on the selected dates
-    List<Room> availableRooms = roomSessionBean.retrieveAvailableRoomsForDates(checkInDate, checkOutDate);
-    if (availableRooms.size() < numberOfRooms) {
-        System.out.println("Sorry, not enough rooms are available for the selected dates.");
-        return;
-    }
-
-    // Step 4: Reserve rooms and calculate total amount based on the published rate
-    double totalAmount = 0;
-    List<Long> reservationIds = new ArrayList<>();
     
-    for (int i = 0; i < numberOfRooms; i++) {
-        Room room = availableRooms.get(i);
-
-        // Retrieve published rate for the room type
-        Rate publishedRate = rateSessionBean.retrievePublishedRateForRoomType(room.getRoomType().getRoomTypeId());
-        if (publishedRate == null) {
-            System.out.println("No published rate available for room type: " + room.getRoomType().getName());
+        if (checkOutDate.isBefore(checkInDate)) {
+            System.out.println("Check-out date must be after check-in date.");
+            return;
+        }
+        
+        // Step 2: Search and display available rooms with rates
+        List<Room> availableRooms = roomSessionBean.retrieveAvailableRoomsForDates(checkInDate, checkOutDate);
+        if (availableRooms.isEmpty()) {
+            System.out.println("No rooms available for the selected dates.");
             return;
         }
 
-        // Calculate the amount based on the published rate and add to the total
-        double reservationAmount = publishedRate.getRatePerNight() * (checkOutDate.toEpochDay() - checkInDate.toEpochDay());
-        totalAmount += reservationAmount;
-
-        // Create and persist reservation for each room
-        Reservation reservation = new Reservation();
-        reservation.setCheckInDate(checkInDate);
-        reservation.setCheckOutDate(checkOutDate);
-        reservation.setNumberOfGuests(1); // Assuming one guest per room for walk-in
-        reservation.setRoomType(room.getRoomType());
-        reservation.setReservationType(reservationType.WALK_IN);
-
-        // Persist reservation and store its ID for potential allocation
-        Long reservationId = reservationSessionBean.createReservation(reservation);
-        reservationIds.add(reservationId);
-    }
-
-    // Step 5: Handle same-day check-in after 2 AM for immediate room allocation
-    LocalTime currentTime = LocalTime.now();
-    boolean immediateAllocation = checkInDate.equals(LocalDate.now()) && currentTime.isAfter(LocalTime.of(2, 0));
-    if (immediateAllocation) {
-        for (Long reservationId : reservationIds) {
-            Reservation reservation = reservationSessionBean.retrieveReservationById(reservationId);
-            if (reservation != null) {
-                roomAllocationSessionBean.allocateRoomForReservation(reservation);
+        // Group rooms by room type for better display
+        Map<RoomType, List<Room>> roomsByType = new HashMap<>();
+        Map<RoomType, Rate> ratesByType = new HashMap<>();
+    
+        for (Room room : availableRooms) {
+            RoomType type = room.getRoomType();
+            roomsByType.computeIfAbsent(type, k -> new ArrayList<>()).add(room);
+            if (!ratesByType.containsKey(type)) {
+                Rate rate = rateSessionBean.retrievePublishedRateForRoomType(type.getRoomTypeId());
+                ratesByType.put(type, rate);
             }
         }
-        System.out.println("Rooms have been allocated immediately due to same-day check-in after 2 AM.");
-    }
 
-    // Display total cost for the reservations
-    System.out.println("Reservation(s) successfully created for walk-in guest.");
-    System.out.printf("Total reservation amount: $%.2f\n", totalAmount);
-}
+        // Display available room types
+        System.out.println("\nAvailable Room Types:");
+        int counter = 1;
+        Map<Integer, RoomType> roomTypeSelectionMap = new HashMap<>();
+    
+        for (Map.Entry<RoomType, List<Room>> entry : roomsByType.entrySet()) {
+            RoomType type = entry.getKey();
+            Rate rate = ratesByType.get(type);
+            double ratePerNight = rate != null ? rate.getRatePerNight() : 0.0;
+        
+            System.out.printf("%d. %s - Rate per night: $%.2f (Available rooms: %d)\n", 
+                counter, 
+                type.getName(), 
+                ratePerNight,
+                entry.getValue().size());
+            roomTypeSelectionMap.put(counter++, type);
+        }
+
+        // Step 3: Get number of rooms to reserve
+        int numberOfRooms;
+        while (true) {
+            System.out.print("\nEnter number of rooms to reserve> ");
+            numberOfRooms = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+        
+            if (numberOfRooms <= 0) {
+                System.out.println("Please enter a valid number of rooms (greater than 0).");
+            } else if (numberOfRooms > availableRooms.size()) {
+                System.out.println("Not enough rooms available. Maximum available: " + availableRooms.size());
+            } else {
+                break;
+            }
+        }
+
+        // Step 4: Room type selection and reservation creation
+        List<Reservation> reservations = new ArrayList<>();
+        double totalAmount = 0.0;
+
+        for (int i = 0; i < numberOfRooms; i++) {
+            // Select room type
+            int typeSelection;
+            RoomType selectedType;
+            while (true) {
+                System.out.printf("Select room type for room #%d (1-%d)> ", i + 1, roomTypeSelectionMap.size());
+                typeSelection = scanner.nextInt();
+                scanner.nextLine(); // Consume newline
+
+                if (!roomTypeSelectionMap.containsKey(typeSelection)) {
+                    System.out.println("Invalid selection. Please choose a valid room type.");
+                    continue;
+                }
+            
+                selectedType = roomTypeSelectionMap.get(typeSelection);
+                int availableOfType = roomsByType.get(selectedType).size();
+            
+                if (availableOfType <= 0) {
+                    System.out.println("No more rooms available of type " + selectedType.getName());
+                    continue;
+                }
+            
+                // Update available count for this room type
+                roomsByType.get(selectedType).remove(0);
+                break;
+            }
+        
+            Rate rate = ratesByType.get(selectedType);
+            if (rate == null) {
+                System.out.println("Error: No published rate available for room type: " + selectedType.getName());
+                return;
+            }
+
+            // Calculate reservation amount
+            long numberOfNights = checkOutDate.toEpochDay() - checkInDate.toEpochDay();
+            double reservationAmount = rate.getRatePerNight() * numberOfNights;
+            totalAmount += reservationAmount;
+
+            // Create reservation
+            Reservation reservation = new Reservation();
+            reservation.setCheckInDate(checkInDate);
+            reservation.setCheckOutDate(checkOutDate);
+            reservation.setNumberOfGuests(1); // Default for walk-in
+            reservation.setRoomType(selectedType);
+            reservation.setReservationType(reservationType.WALK_IN);
+        
+            reservations.add(reservation);
+        }
+
+        // Step 5: Process reservations and handle immediate allocation if needed
+        List<Long> reservationIds = new ArrayList<>();
+        for (Reservation reservation : reservations) {
+            Long reservationId = reservationSessionBean.createReservation(reservation);
+            reservationIds.add(reservationId);
+        }
+
+        // Handle same-day check-in after 2 AM
+        LocalTime currentTime = LocalTime.now();
+        if (checkInDate.equals(LocalDate.now()) && currentTime.isAfter(LocalTime.of(2, 0))) {
+            System.out.println("\nProcessing immediate room allocation for same-day check-in after 2 AM...");
+            for (Long reservationId : reservationIds) {
+                Reservation reservation = reservationSessionBean.retrieveReservationById(reservationId);
+                if (reservation != null) {
+                    roomAllocationSessionBean.allocateRoomForReservation(reservation);
+                }
+            }
+            System.out.println("Room allocation completed.");
+        }
+
+        // Display summary
+        System.out.println("\nReservation Summary:");
+        System.out.printf("Number of rooms reserved: %d\n", numberOfRooms);
+        System.out.printf("Total amount: $%.2f\n", totalAmount);
+        System.out.println("Reservation IDs: " + reservationIds);
+    }
 
 
 
