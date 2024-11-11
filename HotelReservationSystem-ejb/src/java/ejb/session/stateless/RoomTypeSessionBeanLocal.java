@@ -19,4 +19,6 @@ public interface RoomTypeSessionBeanLocal {
     void deleteRoomType(Long roomTypeId);
 
     public List<RoomType> retrieveAvailableRoomTypes(LocalDate checkInDate, LocalDate checkOutDate);
+
+    public RoomType retrieveRoomTypeByName(String name);
 }

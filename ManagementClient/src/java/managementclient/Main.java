@@ -4,7 +4,7 @@ import ejb.session.stateless.*;
 import javax.ejb.EJB;
 
 public class Main {
-    @EJB
+    @EJB(lookup = "java:global/HotelReservationSystem/HotelReservationSystem-ejb/EmployeeSessionBean!ejb.session.stateless.EmployeeSessionBeanRemote")
     private static EmployeeSessionBeanRemote employeeSessionBean;
     
     @EJB

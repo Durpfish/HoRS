@@ -27,9 +27,6 @@ public class Room implements Serializable {
     private String roomNumber;
     
     @Column(nullable = false)
-    private int floorNumber;
-    
-    @Column(nullable = false)
     private boolean disabled;
 
     @ManyToOne(optional = false)
@@ -46,11 +43,12 @@ public class Room implements Serializable {
     public Room() {
     }
 
-    //public Room(String roomNumber, RoomType roomType, roomStatus status) {
-        //this.roomNumber = roomNumber;
-        //this.roomType = roomType;
-        //this.status = status;
-    //}
+
+    public Room(RoomType roomType, String roomNumber, roomStatus status) {
+        this.roomNumber = roomNumber;
+        this.roomType = roomType;
+        this.status = status;
+    }
 
     public Long getRoomId() {
         return roomId;
@@ -66,14 +64,6 @@ public class Room implements Serializable {
 
     public void setRoomNumber(String roomNumber) {
         this.roomNumber = roomNumber;
-    }
-
-    public int getFloorNumber() {
-        return floorNumber;
-    }
-
-    public void setFloorNumber(int floorNumber) {
-        this.floorNumber = floorNumber;
     }
 
     public boolean isDisabled() {

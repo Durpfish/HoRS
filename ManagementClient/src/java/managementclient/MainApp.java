@@ -81,7 +81,7 @@ public class MainApp {
 
         loggedInEmployee = employeeSessionBean.loginEmployee(username, password);
         if (loggedInEmployee != null) {
-            System.out.println("Login successful! Welcome, " + loggedInEmployee.getFirstName() + " " + loggedInEmployee.getLastName() + ".");
+            System.out.println("Login successful! Welcome, " + loggedInEmployee.getUsername() + ".");
             System.out.println("Role: " + loggedInEmployee.getRole());
         } else {
             System.out.println("Invalid username or password.");

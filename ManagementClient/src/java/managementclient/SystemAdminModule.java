@@ -72,10 +72,6 @@ public class SystemAdminModule {
     }
     
     private void doCreateNewEmployee() {
-        System.out.print("Enter employee first name> ");
-        String firstName = scanner.nextLine();
-        System.out.print("Enter employee last name> ");
-        String lastName = scanner.nextLine();
         System.out.print("Enter employee username> ");
         String username = scanner.nextLine();
         System.out.print("Enter employee password> ");
@@ -102,8 +98,6 @@ public class SystemAdminModule {
         }
 
         Employee employee = new Employee();
-        employee.setFirstName(firstName);
-        employee.setLastName(lastName);
         employee.setUsername(username);
         employee.setPassword(password);
         employee.setRole(role);
@@ -116,7 +110,7 @@ public class SystemAdminModule {
         List<Employee> employees = employeeSessionBean.getAllEmployees();
         System.out.println("*** List of All Employees ***");
         for (Employee employee : employees) {
-            System.out.println("ID: " + employee.getEmployeeId() + ", Name: " + employee.getFirstName() + " " + employee.getLastName() + ", Role: " + employee.getRole());
+            System.out.println("ID: " + employee.getEmployeeId() + ", Name: " + employee.getUsername() + ", Role: " + employee.getRole());
         }
     }
     

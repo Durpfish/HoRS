@@ -28,4 +28,6 @@ public interface RoomSessionBeanRemote {
     public boolean hasAvailableRooms(RoomType roomType, LocalDate checkInDate, LocalDate checkOutDate);
     
     public List<Room> retrieveAvailableRoomsForRoomType(RoomType roomType, LocalDate checkInDate, LocalDate checkOutDate);
+    
+    public Room retrieveRoomByRoomNumber(String roomNumber);
 }

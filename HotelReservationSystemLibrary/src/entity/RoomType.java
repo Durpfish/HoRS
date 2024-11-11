@@ -7,7 +7,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 
 @Entity
 public class RoomType implements Serializable {
@@ -35,8 +37,13 @@ public class RoomType implements Serializable {
 
     private boolean disabled;
 
-    @Column(nullable = false, unique = true)
-    private Integer roomOrder; // New field for room type hierarchy
+    
+    @OneToOne
+    @JoinColumn(name = "nextHigherRoomTypeId")
+    private RoomType nextHigherRoomType;
+    
+//    @Column(nullable = false, unique = true)
+//    private Integer roomOrder; // New field for room type hierarchy
     
     @OneToMany(mappedBy = "roomType")
     private List<Room> rooms;
@@ -47,7 +54,9 @@ public class RoomType implements Serializable {
     public RoomType() {
     }
     
-    
+    public RoomType(String name) {
+        this.name = name;
+    }
 
     // Getters and Setters
     public Long getRoomTypeId() {
@@ -114,13 +123,13 @@ public class RoomType implements Serializable {
         this.disabled = disabled;
     }
 
-    public Integer getRoomOrder() {
-        return roomOrder;
-    }
-
-    public void setRoomOrder(Integer roomOrder) {
-        this.roomOrder = roomOrder;
-    }
+//    public Integer getRoomOrder() {
+//        return roomOrder;
+//    }
+//
+//    public void setRoomOrder(Integer roomOrder) {
+//        this.roomOrder = roomOrder;
+//    }
 
     @Override
     public int hashCode() {
@@ -140,6 +149,20 @@ public class RoomType implements Serializable {
 
     @Override
     public String toString() {
-        return "entity.RoomType[ id=" + roomTypeId + " ]";
+        return name;
+    }
+
+    /**
+     * @return the nextHigherRoomType
+     */
+    public RoomType getNextHigherRoomType() {
+        return nextHigherRoomType;
+    }
+
+    /**
+     * @param nextHigherRoomType the nextHigherRoomType to set
+     */
+    public void setNextHigherRoomType(RoomType nextHigherRoomType) {
+        this.nextHigherRoomType = nextHigherRoomType;
     }
 }

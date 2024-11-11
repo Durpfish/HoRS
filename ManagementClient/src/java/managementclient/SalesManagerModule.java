@@ -72,10 +72,14 @@ public class SalesManagerModule {
     private void doCreateNewRoomRate() {
         System.out.println("*** Create New Room Rate ***");
 
+        System.out.print("Enter rate name> ");
+        String rateName = scanner.nextLine();
+
         System.out.print("Enter rate per night> ");
         double ratePerNight = scanner.nextDouble();
         scanner.nextLine(); // Consume newline
 
+        // Display rate types and allow selection
         System.out.println("Select rate type:");
         for (int i = 0; i < rateType.values().length; i++) {
             System.out.println((i + 1) + ": " + rateType.values()[i]);
@@ -84,11 +88,12 @@ public class SalesManagerModule {
         int rateTypeChoice = scanner.nextInt();
         scanner.nextLine(); // Consume newline
         rateType selectedRateType = rateType.values()[rateTypeChoice - 1];
-        
+
         LocalDate validFrom = null;
         LocalDate validTo = null;
 
-        if (rateTypeChoice == 3 || rateTypeChoice == 4) { // 3 and 4 are peak and promotion
+        // Only prompt for dates if the rate type is PEAK or PROMOTION
+        if (selectedRateType == rateType.PEAK || selectedRateType == rateType.PROMOTION) {
             System.out.print("Enter validity start date (YYYY-MM-DD)> ");
             validFrom = LocalDate.parse(scanner.nextLine());
 
@@ -96,6 +101,7 @@ public class SalesManagerModule {
             validTo = LocalDate.parse(scanner.nextLine());
         }
 
+        // Retrieve available room types and select one
         System.out.println("Select Room Type:");
         List<RoomType> roomTypes = roomTypeSessionBean.retrieveAllRoomTypes();
         for (int i = 0; i < roomTypes.size(); i++) {
@@ -106,10 +112,11 @@ public class SalesManagerModule {
         scanner.nextLine(); // Consume newline
         RoomType roomType = roomTypes.get(roomTypeChoice - 1);
 
-        Rate roomRate = new Rate(ratePerNight, validFrom, validTo, false, selectedRateType, roomType);
+        Rate roomRate = new Rate(rateName, ratePerNight, validFrom, validTo, false, selectedRateType, roomType);
         rateSessionBean.createRate(roomRate);
         System.out.println("Room rate created successfully!");
     }
+
 
     private void doViewRoomRateDetails() {
         System.out.println("*** View Room Rate Details ***");

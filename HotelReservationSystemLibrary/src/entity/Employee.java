@@ -19,12 +19,6 @@ public class Employee implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long employeeId;
 
-    @Column(length = 64, nullable = false)
-    private String firstName;
-
-    @Column(length = 64, nullable = false)
-    private String lastName;
-
     @Column(length = 64, nullable = false, unique = true)
     private String username;
 
@@ -39,9 +33,7 @@ public class Employee implements Serializable {
     public Employee() {
     }
 
-    public Employee(String firstName, String lastName, String username, String password, employeeRole role) {
-        this.firstName = firstName;
-        this.lastName = lastName;
+    public Employee(String username, String password, employeeRole role) {
         this.username = username;
         this.password = password;
         this.role = role;
@@ -54,22 +46,6 @@ public class Employee implements Serializable {
 
     public void setEmployeeId(Long employeeId) {
         this.employeeId = employeeId;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
     }
 
     public String getUsername() {

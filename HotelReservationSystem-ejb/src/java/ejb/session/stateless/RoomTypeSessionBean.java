@@ -9,6 +9,7 @@ import javax.persistence.PersistenceContext;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
+import javax.persistence.NoResultException;
 import util.enumeration.roomStatus;
 
 
@@ -22,7 +23,7 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
     private EntityManager em;
 
     public Long createRoomType(RoomType roomType) {
-        em.persist(roomType);
+        em.persist(roomType);   
         em.flush();
         return roomType.getRoomTypeId();
     }
@@ -73,4 +74,15 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
             em.remove(roomType);
         }
     }
+    
+    public RoomType retrieveRoomTypeByName(String name) {
+        try {
+            return em.createQuery("SELECT rt FROM RoomType rt WHERE rt.name = :name", RoomType.class)
+                     .setParameter("name", name)
+                     .getSingleResult();
+        } catch (NoResultException e) {
+            return null; // Return null if no room type with the specified name is found
+        }
+    }
+
 }

@@ -136,10 +136,24 @@ public class OperationManagerModule {
         System.out.print("Enter amenities (comma-separated)> ");
         String amenities = scanner.nextLine();
 
-        System.out.print("Enter hierarchy of this room type> ");
-        int order = scanner.nextInt();
-        scanner.nextLine(); // Consume newline
+//        System.out.print("Enter hierarchy of this room type> ");
+//        int order = scanner.nextInt();
+//        scanner.nextLine(); // Consume newline
+        
+        System.out.print("Enter the name of the next higher room type (or leave blank if none)> ");
+        String nextHigherRoomTypeName = scanner.nextLine();
 
+        // Find the next higher room type (if provided)
+        RoomType nextHigherRoomType = null;
+        if (!nextHigherRoomTypeName.trim().isEmpty()) {
+            nextHigherRoomType = roomTypeSessionBean.retrieveRoomTypeByName(nextHigherRoomTypeName);
+            if (nextHigherRoomType == null) {
+                System.out.println("Room type not found. Please ensure the next higher room type exists before setting it.");
+                return;
+            }
+        }
+        
+       
         RoomType roomType = new RoomType();
         roomType.setName(name);
         roomType.setDescription(description);
@@ -147,7 +161,7 @@ public class OperationManagerModule {
         roomType.setSize(size);
         roomType.setBedType(bedType);
         roomType.setAmenities(amenities);
-        roomType.setRoomOrder(order);
+         roomType.setNextHigherRoomType(nextHigherRoomType);
 
         roomTypeSessionBean.createRoomType(roomType);
         System.out.println("Room type created successfully!");
@@ -169,7 +183,7 @@ public class OperationManagerModule {
             System.out.println("Size: " + roomType.getSize());
             System.out.println("Bed Type: " + roomType.getBedType());
             System.out.println("Amenities: " + roomType.getAmenities());
-            System.out.println("Order: " + roomType.getRoomOrder());
+            System.out.println("Next Higher: " + roomType.getNextHigherRoomType());
             System.out.println("Disabled: " + (roomType.isDisabled() ? "Yes" : "No"));
         } else {
             System.out.println("Room type with ID " + roomTypeId + " does not exist.");
@@ -283,10 +297,6 @@ public class OperationManagerModule {
         System.out.print("Enter room number> ");
         String roomNumber = scanner.nextLine();
 
-        System.out.print("Enter floor number> ");
-        int floorNumber = scanner.nextInt();
-        scanner.nextLine(); // Consume newline
-
         System.out.println("Select Room Type:");
         List<RoomType> roomTypes = roomTypeSessionBean.retrieveAllRoomTypes();
         for (int i = 0; i < roomTypes.size(); i++) {
@@ -299,7 +309,6 @@ public class OperationManagerModule {
 
         Room room = new Room();
         room.setRoomNumber(roomNumber);
-        room.setFloorNumber(floorNumber);
         room.setRoomType(roomType);
         room.setStatus(roomStatus.AVAILABLE);
 
@@ -327,12 +336,6 @@ public class OperationManagerModule {
            room.setRoomNumber(roomNumber);
        }
 
-       System.out.print("Enter new floor number (or 0 to keep current: " + room.getFloorNumber() + ")> ");
-       int floorNumber = scanner.nextInt();
-       scanner.nextLine(); // Consume newline
-       if (floorNumber != 0) {
-           room.setFloorNumber(floorNumber);
-       }
 
        System.out.println("Select new Room Type (or 0 to keep current: " + room.getRoomType().getName() + ")");
        List<RoomType> roomTypes = roomTypeSessionBean.retrieveAllRoomTypes(); // Retrieve list of room types
@@ -381,14 +384,13 @@ public class OperationManagerModule {
         System.out.println("*** View All Rooms ***");
 
         List<Room> rooms = roomSessionBean.retrieveAllRooms();
-        System.out.printf("%-10s %-15s %-10s %-20s %-15s\n", 
-                          "Room ID", "Room Number", "Floor", "Room Type", "Status");
+        System.out.printf("%-10s %-15s %-20s %-15s\n", 
+                          "Room ID", "Room Number", "Room Type", "Status");
 
         for (Room room : rooms) {
-            System.out.printf("%-10d %-15s %-10d %-20s %-15s\n",
+            System.out.printf("%-10d %-15s %-20s %-15s\n",
                               room.getRoomId(),
                               room.getRoomNumber(),
-                              room.getFloorNumber(),
                               room.getRoomType().getName(),
                               room.getStatus());
         }

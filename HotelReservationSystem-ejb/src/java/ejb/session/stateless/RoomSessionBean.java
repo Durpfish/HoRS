@@ -7,9 +7,10 @@ import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.List;
+import javax.persistence.NoResultException;
 import util.enumeration.roomStatus;
 
-@Stateless
+@Stateless 
 public class RoomSessionBean implements RoomSessionBeanRemote, RoomSessionBeanLocal {
 
     @PersistenceContext(unitName = "HotelReservationSystem-ejbPU")
@@ -107,5 +108,15 @@ public class RoomSessionBean implements RoomSessionBeanRemote, RoomSessionBeanLo
                 .setParameter("checkInDate", checkInDate)
                 .setParameter("checkOutDate", checkOutDate)
                 .getResultList();
+    }
+    
+    public Room retrieveRoomByRoomNumber(String roomNumber) {
+        try {
+            return em.createQuery("SELECT r FROM Room r WHERE r.roomNumber = :roomNumber", Room.class)
+                     .setParameter("roomNumber", roomNumber)
+                     .getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
     }
 }

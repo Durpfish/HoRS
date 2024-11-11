@@ -49,15 +49,17 @@ public class Rate implements Serializable {
     public Rate() {
     }
     
-    //public Rate(String name, RoomType roomType, rateType rateType, double ratePerNight) {
-        //this.rateName = rateName;
-        //this.roomType = roomType;
-        //this.rateType = rateType;
-        //this.ratePerNight = ratePerNight;
-    //}
+    public Rate(String rateName, RoomType roomType, rateType rateType, double ratePerNight) {
+        this.rateName = rateName;
+        this.roomType = roomType;
+        this.rateType = rateType;
+        this.ratePerNight = ratePerNight;
+        this.disabled = false;
+    }
 
-    public Rate(double ratePerNight, LocalDate validFrom, LocalDate validTo, boolean disabled, rateType rateType, RoomType roomType) {
-        //this.rateName = rateName;
+
+    public Rate(String rateName, double ratePerNight, LocalDate validFrom, LocalDate validTo, boolean disabled, rateType rateType, RoomType roomType) {
+        this.rateName = rateName;
         this.ratePerNight = ratePerNight;
         this.validFrom = validFrom;
         this.validTo = validTo;

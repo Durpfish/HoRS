@@ -19,4 +19,6 @@ public interface RoomTypeSessionBeanRemote {
     void updateRoomType(RoomType roomType);
 
     void deleteRoomType(Long roomTypeId);
+    
+    public RoomType retrieveRoomTypeByName(String name);
 }
