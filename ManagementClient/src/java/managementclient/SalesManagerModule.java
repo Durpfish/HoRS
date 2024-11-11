@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Scanner;
 import util.enumeration.rateType;
+import util.exception.RateDeletionException;
 
 /**
  *
@@ -231,8 +232,11 @@ public class SalesManagerModule {
             try {
                 rateSessionBean.deleteRate(rateId);
                 System.out.println("Room rate deleted successfully!");
-            } catch (IllegalArgumentException e) {
+            } catch(RateDeletionException e) {
                 System.out.println("Unable to delete Room Rate. " + e.getMessage());
+            }
+            catch (IllegalArgumentException e) {
+                System.out.println("An unexpected error occurred: " + e.getMessage());
             }
         } else {
             System.out.println("Room rate deletion cancelled.");

@@ -90,7 +90,7 @@ public class MainApp {
 
     private void showMainMenu() {
         switch (loggedInEmployee.getRole()) {
-            case SYSTEM_ADMIN:
+            case SYSTEM_ADMINISTRATOR:
                 systemAdminModule.showMenu();
                 break;
             case OPERATION_MANAGER:

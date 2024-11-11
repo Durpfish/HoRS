@@ -52,7 +52,7 @@ public class Reservation implements Serializable {
     public Reservation() {
     }
 
-    public Reservation(LocalDate checkInDate, LocalDate checkOutDate, int numberOfGuests, Guest guest, RoomType roomType, Partner partner, reservationType reservationType) {
+    public Reservation(LocalDate checkInDate, LocalDate checkOutDate, int numberOfGuests, Guest guest, RoomType roomType, Partner partner, reservationType reservationType, RoomAllocation roomAllocation, double totalAmount) {
         this.checkInDate = checkInDate;
         this.checkOutDate = checkOutDate;
         this.reservationDate = LocalDate.now();
@@ -61,6 +61,8 @@ public class Reservation implements Serializable {
         this.roomType = roomType;
         this.partner = partner;
         this.reservationType = reservationType;
+        this.roomAllocation = roomAllocation;
+        this.totalAmount = totalAmount;
     }
     
     @PrePersist

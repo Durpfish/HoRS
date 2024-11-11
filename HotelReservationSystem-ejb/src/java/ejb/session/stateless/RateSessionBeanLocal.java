@@ -5,6 +5,7 @@ import entity.RoomType;
 import java.time.LocalDate;
 import java.util.List;
 import javax.ejb.Local;
+import util.exception.RateDeletionException;
 
 @Local
 public interface RateSessionBeanLocal {
@@ -19,7 +20,7 @@ public interface RateSessionBeanLocal {
 
     void updateRate(Rate rate);
 
-    void deleteRate(Long rateId);
+    void deleteRate(Long rateId) throws RateDeletionException;
 
     public Rate retrievePublishedRateForRoomType(Long roomTypeId);
 

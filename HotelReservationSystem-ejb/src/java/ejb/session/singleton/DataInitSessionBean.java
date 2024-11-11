@@ -1,11 +1,13 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/J2EE/EJB31/SingletonEjbClass.java to edit this template
- */
 package ejb.session.singleton;
 
 import ejb.session.stateless.EmployeeSessionBeanLocal;
+import ejb.session.stateless.RoomSessionBeanLocal;
+import ejb.session.stateless.RoomTypeSessionBeanLocal;
+import ejb.session.stateless.RateSessionBeanLocal;
 import entity.Employee;
+import entity.Room;
+import entity.RoomType;
+import entity.Rate;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
@@ -27,7 +29,7 @@ public class DataInitSessionBean {
 
     @EJB
     private EmployeeSessionBeanLocal employeeSessionBean;
-
+    
     @PersistenceContext(unitName = "HotelReservationSystem-ejbPU")
     private EntityManager em;
     
@@ -37,11 +39,11 @@ public class DataInitSessionBean {
     @PostConstruct
     public void postConstruct() {
         if (em.find(Employee.class, 1l) == null) {
-            employeeSessionBean.addEmployee(new Employee("Alice", "Smith", "alice", "password123", employeeRole.SYSTEM_ADMIN));
+            employeeSessionBean.addEmployee(new Employee("Alice", "Smith", "alice", "password123", employeeRole.SYSTEM_ADMINISTRATOR));
             employeeSessionBean.addEmployee(new Employee("Bob", "Johnson", "bob", "password123", employeeRole.OPERATION_MANAGER));
             employeeSessionBean.addEmployee(new Employee("Steve", "Jones", "steve", "password123", employeeRole.SALES_MANAGER));
             employeeSessionBean.addEmployee(new Employee("Laura", "Miller", "laura", "password123", employeeRole.GUEST_RELATION_OFFICER));
+            }
+            
         }
-        
     }
-}

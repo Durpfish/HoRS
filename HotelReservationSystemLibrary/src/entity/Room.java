@@ -43,6 +43,15 @@ public class Room implements Serializable {
     @OneToMany(mappedBy = "room")
     private List<RoomAllocation> allocations;
 
+    public Room() {
+    }
+
+    //public Room(String roomNumber, RoomType roomType, roomStatus status) {
+        //this.roomNumber = roomNumber;
+        //this.roomType = roomType;
+        //this.status = status;
+    //}
+
     public Long getRoomId() {
         return roomId;
     }

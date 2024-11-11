@@ -44,6 +44,11 @@ public class RoomType implements Serializable {
     @OneToMany(mappedBy = "roomType")
     private List<Rate> rates;
 
+    public RoomType() {
+    }
+    
+    
+
     // Getters and Setters
     public Long getRoomTypeId() {
         return roomTypeId;

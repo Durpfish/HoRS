@@ -10,6 +10,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import util.enumeration.rateType;
+import util.exception.RateDeletionException;
 
 @Stateless
 public class RateSessionBean implements RateSessionBeanRemote, RateSessionBeanLocal {
@@ -62,16 +63,21 @@ public class RateSessionBean implements RateSessionBeanRemote, RateSessionBeanLo
     }
 
     @Override
-    public void deleteRate(Long rateId) {
+    public void deleteRate(Long rateId) throws RateDeletionException {
         Rate rate = retrieveRateById(rateId);
         if (rate != null) {
             RoomType roomType = rate.getRoomType();
-            long reservationCount = em.createQuery("SELECT COUNT(r) FROM Reservation r WHERE r.roomType = :roomType AND r.rate = :rate", Long.class)
-                                                .setParameter("roomType", roomType)
-                                                .setParameter("rate", rate)
-                                                .getSingleResult();
+            long reservationCount = em.createQuery("SELECT COUNT(r) FROM Reservation r " +
+                                            "JOIN r.roomType rt " +
+                                            "JOIN rt.rates rate " +
+                                            "WHERE rt = :roomType " +
+                                            "AND rate = :rate", Long.class)
+                                            .setParameter("roomType", roomType)
+                                            .setParameter("rate", rate)
+                                            .getSingleResult();
+
             if (reservationCount > 0) {
-                throw new IllegalArgumentException("Cannot delete rate as it is associated with existing reservations.");
+                throw new RateDeletionException("Cannot delete rate as it is associated with existing reservations.");
             }
             em.remove(rate);
         }
@@ -83,7 +89,7 @@ public class RateSessionBean implements RateSessionBeanRemote, RateSessionBeanLo
             TypedQuery<Rate> query = em.createQuery(
                 "SELECT r FROM Rate r WHERE r.roomType = :roomType AND r.disabled = false " +
                 "AND (r.validFrom IS NULL OR r.validFrom <= :date) " +
-                "AND (r.validUntil IS NULL OR r.validUntil >= :date) " +
+                "AND (r.validTo IS NULL OR r.validTo >= :date) " +
                 "ORDER BY CASE WHEN r.rateType = :promotion THEN 0 " +
                 "WHEN r.rateType = :peak THEN 1 " +
                 "WHEN r.rateType = :normal THEN 2 " +

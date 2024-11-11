@@ -7,14 +7,14 @@
     <class>entity.Guest</class>
     <class>entity.Partner</class>
     <class>entity.Rate</class>
-    <class>entity.Reservation</class>
     <class>entity.Room</class>
     <class>entity.RoomAllocation</class>
-    <class>entity.RoomType</class>
     <class>entity.RoomAllocationExceptionReport</class>
+    <class>entity.RoomType</class>
+    <class>entity.Reservation</class>
     <exclude-unlisted-classes>true</exclude-unlisted-classes>
     <properties>
-      <property name="javax.persistence.schema-generation.database.action" value="create"/>
+      <property name="javax.persistence.schema-generation.database.action" value="drop-and-create"/>
     </properties>
   </persistence-unit>
 </persistence>

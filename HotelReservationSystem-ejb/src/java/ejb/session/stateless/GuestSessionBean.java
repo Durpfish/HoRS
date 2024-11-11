@@ -23,17 +23,26 @@ public class GuestSessionBean implements GuestSessionBeanRemote, GuestSessionBea
         }
     }
 
-    @Override
-    public Guest loginGuest(String username, String password) {
-        try {
+    //@Override
+    //public Guest loginGuest(String username, String password) {
+        //try {
             // Assuming password is hashed; replace "passwordHash" with the hashed password
-            String passwordHash = hashPassword(password);
-            return em.createQuery("SELECT g FROM Guest g WHERE g.username = :username AND g.password = :passwordHash", Guest.class)
-                     .setParameter("username", username)
-                     .setParameter("passwordHash", passwordHash)
-                     .getSingleResult();
-        } catch (Exception e) {
-            return null; // Handle exceptions as needed
+            //String passwordHash = hashPassword(password);
+            //return em.createQuery("SELECT g FROM Guest g WHERE g.username = :username AND g.password = :password", Guest.class)
+                     //.setParameter("username", username)
+                     //.setParameter("password", passwordHash)
+                     //.getSingleResult();
+        //} catch (Exception e) {
+            //return null; // Handle exceptions as needed
+        //}
+    //}
+    
+    public Guest loginGuest(String username, String password) {
+        Guest guest = findGuestByUsername(username);
+        if (guest != null && guest.getPassword().equals(password)) {
+            return guest; // Successful login
+        } else {
+            return null; // Invalid credentials
         }
     }
 

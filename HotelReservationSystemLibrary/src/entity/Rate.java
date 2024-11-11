@@ -23,6 +23,9 @@ public class Rate implements Serializable {
     private Long rateId;
     
     @Column(nullable = false)
+    private String rateName;
+    
+    @Column(nullable = false)
     private double ratePerNight;
 
     @Column(nullable = true)
@@ -45,8 +48,16 @@ public class Rate implements Serializable {
     // Constructors
     public Rate() {
     }
+    
+    //public Rate(String name, RoomType roomType, rateType rateType, double ratePerNight) {
+        //this.rateName = rateName;
+        //this.roomType = roomType;
+        //this.rateType = rateType;
+        //this.ratePerNight = ratePerNight;
+    //}
 
     public Rate(double ratePerNight, LocalDate validFrom, LocalDate validTo, boolean disabled, rateType rateType, RoomType roomType) {
+        //this.rateName = rateName;
         this.ratePerNight = ratePerNight;
         this.validFrom = validFrom;
         this.validTo = validTo;
@@ -64,6 +75,14 @@ public class Rate implements Serializable {
         this.rateId = rateId;
     }
 
+    public String getRateName() {
+        return rateName;
+    }
+
+    public void setRateName(String rateName) {
+        this.rateName = rateName;
+    }
+    
     public double getRatePerNight() {
         return ratePerNight;
     }
