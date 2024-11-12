@@ -57,6 +57,7 @@ public class RoomTypeSessionBean implements RoomTypeSessionBeanRemote, RoomTypeS
 
     public void updateRoomType(RoomType roomType) {
         em.merge(roomType);
+        em.flush();
     }
 
     public void deleteRoomType(Long roomTypeId) {

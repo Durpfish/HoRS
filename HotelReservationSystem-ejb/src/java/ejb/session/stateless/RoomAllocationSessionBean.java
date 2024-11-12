@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.persistence.Query;
 import util.enumeration.roomStatus;
 
 @Stateless
@@ -32,7 +33,6 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
         allocateRoomsForDate(today);
     }
 
-    @Override
     public void allocateRoomsForDate(LocalDate date) {
         List<Reservation> reservations = em.createQuery(
             "SELECT r FROM Reservation r WHERE r.checkInDate = :date ORDER BY r.roomType.name ASC", Reservation.class)
@@ -40,6 +40,16 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
             .getResultList();
 
         for (Reservation reservation : reservations) {
+            List<RoomAllocation> existingAllocations = em.createQuery(
+                "SELECT ra FROM RoomAllocation ra WHERE ra.reservation.reservationId = :reservationId", RoomAllocation.class)
+                .setParameter("reservationId", reservation.getReservationId())
+                .getResultList();
+
+            if (!existingAllocations.isEmpty()) {
+                // If room is already allocated for this reservation, skip allocation
+                continue;
+            }
+            
             Room allocatedRoom = findAvailableRoomOrUpgrade(reservation.getRoomType());
 
             if (allocatedRoom != null) {
@@ -48,7 +58,8 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
                 em.merge(allocatedRoom);
 
                 if (!allocatedRoom.getRoomType().equals(reservation.getRoomType())) {
-                    logRoomAllocationException(reservation, "Room upgrade allocated to next higher tier.", ExceptionType.UPGRADE_ALLOCATED);
+                    logRoomAllocationException(reservation, String.format("Room upgraded from %s to %s", reservation.getRoomType().getName(),
+                            allocatedRoom.getRoomType().getName()), ExceptionType.UPGRADE_ALLOCATED);
                 }
             } else {
                 logRoomAllocationException(reservation, "No rooms available, manual handling required.", ExceptionType.NO_ROOM_AVAILABLE);
@@ -58,6 +69,16 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
 
     @Override
     public void allocateRoomForReservation(Reservation reservation) {
+        List<RoomAllocation> existingAllocations = em.createQuery(
+            "SELECT ra FROM RoomAllocation ra WHERE ra.reservation.reservationId = :reservationId", RoomAllocation.class)
+            .setParameter("reservationId", reservation.getReservationId())
+            .getResultList();
+
+        if (!existingAllocations.isEmpty()) {
+            // If room is already allocated for this reservation, skip allocation
+            return;
+        }
+        
         Room allocatedRoom = findAvailableRoomOrUpgrade(reservation.getRoomType());
 
         if (allocatedRoom != null) {
@@ -66,7 +87,8 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
             em.merge(allocatedRoom);
 
             if (!allocatedRoom.getRoomType().equals(reservation.getRoomType())) {
-                logRoomAllocationException(reservation, "Room upgrade allocated to next higher tier.", ExceptionType.UPGRADE_ALLOCATED);
+                logRoomAllocationException(reservation, String.format("Room upgraded from %s to %s", reservation.getRoomType().getName(),
+                        allocatedRoom.getRoomType().getName()), ExceptionType.UPGRADE_ALLOCATED);
             }
         } else {
             logRoomAllocationException(reservation, "No rooms available, manual handling required.", ExceptionType.NO_ROOM_AVAILABLE);
@@ -74,6 +96,16 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
     }
 
     public void allocateRoomsForOnlineReservation(Reservation reservation) {
+        List<RoomAllocation> existingAllocations = em.createQuery(
+            "SELECT ra FROM RoomAllocation ra WHERE ra.reservation.reservationId = :reservationId", RoomAllocation.class)
+            .setParameter("reservationId", reservation.getReservationId())
+            .getResultList();
+
+        if (!existingAllocations.isEmpty()) {
+            // Room already allocated for this reservation, skip further allocation
+            return;
+        }
+        
         Room allocatedRoom = findAvailableRoomOrUpgrade(reservation.getRoomType());
 
         if (allocatedRoom != null) {
@@ -81,12 +113,11 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
             roomAllocation.setAllocationDate(LocalDate.now());
             roomAllocation.setRoom(allocatedRoom);
             roomAllocation.setReservation(reservation);
-
-            // Persist RoomAllocation without marking room as unavailable immediately for online flow.
             em.persist(roomAllocation);
 
             if (!allocatedRoom.getRoomType().equals(reservation.getRoomType())) {
-                logRoomAllocationException(reservation, "Room upgrade allocated to next higher tier.", ExceptionType.UPGRADE_ALLOCATED);
+                logRoomAllocationException(reservation, String.format("Room upgraded from %s to %s", reservation.getRoomType().getName(),
+                            allocatedRoom.getRoomType().getName()), ExceptionType.UPGRADE_ALLOCATED);
             }
         } else {
             logRoomAllocationException(reservation, "No rooms available, manual handling required.", ExceptionType.NO_ROOM_AVAILABLE);
@@ -124,11 +155,11 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
 
     private Room findAvailableRoom(RoomType roomType) {
         List<Room> availableRooms = em.createQuery(
-            "SELECT r FROM Room r WHERE r.roomType = :roomType AND r.status = :status", Room.class)
+            "SELECT r FROM Room r WHERE r.roomType = :roomType AND r.status = :status ORDER BY r.roomNumber ASC", Room.class)
             .setParameter("roomType", roomType)
             .setParameter("status", roomStatus.AVAILABLE)
             .getResultList();
-
+    
         return availableRooms.isEmpty() ? null : availableRooms.get(0);
     }
 

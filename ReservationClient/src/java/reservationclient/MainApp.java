@@ -173,7 +173,7 @@ public class MainApp {
             }
 
             // Step 2: Search and display available room types with rates
-            List<RoomType> availableRoomTypes = roomTypeSessionBean.retrieveAllRoomTypes();
+            List<RoomType> availableRoomTypes = roomTypeSessionBean.retrieveAvailableRoomTypes(checkInDate, checkOutDate);
             if (availableRoomTypes.isEmpty()) {
                 System.out.println("No room types are available.");
                 return;

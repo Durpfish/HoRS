@@ -114,18 +114,11 @@ public class GuestRelationOfficerModule {
         System.out.println("*** Walk-in Room Reservation ***");
     
         // Step 1: Get and validate dates
-        System.out.print("Enter check-in date (YYYY-MM-DD)> ");
-        LocalDate checkInDate = LocalDate.parse(scanner.nextLine());
+        System.out.print("Enter check-in date (YYYY-MM-DD)> " + LocalDate.now());
+        LocalDate checkInDate = LocalDate.now();
     
         System.out.print("Enter check-out date (YYYY-MM-DD)> ");
         LocalDate checkOutDate = LocalDate.parse(scanner.nextLine());
-            
-        // Validate dates
-        LocalDate today = LocalDate.now();
-        if (checkInDate.isBefore(today)) {
-            System.out.println("Check-in date cannot be in the past.");
-            return;
-        }
     
         if (checkOutDate.isBefore(checkInDate)) {
             System.out.println("Check-out date must be after check-in date.");
