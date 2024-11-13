@@ -38,31 +38,35 @@ public class MainApp {
         boolean exit = false;
         while (!exit) {
             if (loggedInGuest == null) {
-                showLoginMenu();
+                showMainMenu();
             } else {
                 showMainMenu();
             }
         }
     }
 
-    private void showLoginMenu() {
-        System.out.println("*** HoRS Reservation Client :: Login/Register ***");
-        System.out.println("1: Login");
-        System.out.println("2: Register");
-        System.out.println("3: Exit");
+    private void showInitialMenu() {
+        System.out.println("*** HoRS Reservation Client :: Main Menu ***");
+        System.out.println("1: Search Room Availability");
+        System.out.println("2: Login");
+        System.out.println("3: Register");
+        System.out.println("4: Exit");
         System.out.print("Select an option> ");
-        
+
         int response = scanner.nextInt();
         scanner.nextLine(); // Consume newline
-        
+
         switch (response) {
             case 1:
-                doGuestLogin();
+                doSearchRoomAvailability();
                 break;
             case 2:
-                doRegisterGuest();
+                doGuestLogin();
                 break;
             case 3:
+                doRegisterGuest();
+                break;
+            case 4:
                 System.out.println("Thank you for using the Reservation Client. Goodbye!");
                 System.exit(0);
                 break;

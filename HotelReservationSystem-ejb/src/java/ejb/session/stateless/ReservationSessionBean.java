@@ -93,4 +93,11 @@ public class ReservationSessionBean implements ReservationSessionBeanRemote, Res
         LocalTime currentTime = LocalTime.now();
         return checkInDate.equals(today) && currentTime.isAfter(LocalTime.of(2, 0));
     }
+    
+    public List<Reservation> retrieveReservationsByPartner(Long partnerId) {
+    return em.createQuery("SELECT r FROM Reservation r WHERE r.partner.partnerId = :partnerId", Reservation.class)
+             .setParameter("partnerId", partnerId)
+             .getResultList();
+}
+
 }

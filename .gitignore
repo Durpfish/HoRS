@@ -8,3 +8,9 @@
 /ReservationClient/dist/
 /dist/
 /HotelReservationSystem-ejb/build/
+/HolidayClient/nbproject/private/
+/HolidayClient/build/
+/HolidayClient/dist/
+/HotelReservationSystemJavaSeClient/nbproject/private/
+/HotelReservationSystemJavaSeClient/build/
+/HotelReservationSystemJavaSeClient/dist/

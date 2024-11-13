@@ -22,7 +22,7 @@ public class Partner implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long partnerId;
 
-    @Column(length = 64, nullable = false)
+    @Column(length = 64)
     private String name;
 
     @Column(length = 64)
@@ -46,6 +46,12 @@ public class Partner implements Serializable {
     // Constructors
     public Partner() {
     }
+
+    public Partner(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+    
 
     public Partner(String name, String contactPerson, String email, String phone, String username, String password) {
         this.name = name;

@@ -10,8 +10,6 @@ public interface PartnerSessionBeanRemote {
 
     void registerPartner(Partner partner);
 
-    Partner loginPartner(String username, String password);
-
     List<Reservation> viewPartnerReservations(Long partnerId);
 
     Partner findPartnerById(Long partnerId);
@@ -19,6 +17,16 @@ public interface PartnerSessionBeanRemote {
     void updatePartnerDetails(Partner partner);
 
     void deletePartner(Long partnerId);
-    
+
     public List<Partner> getAllPartners();
+
+    public Long createPartner(Partner partner);
+
+    public Partner partnerLogin(String username, String password);
+
+    public Partner retrievePartnerById(Long partnerId);
+
+    public Partner retrievePartnerByUsername(String username);
+
+    public void updatePartner(Partner partner);
 }

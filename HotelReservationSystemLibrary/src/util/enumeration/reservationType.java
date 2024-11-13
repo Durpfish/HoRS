@@ -11,5 +11,5 @@ package util.enumeration;
 public enum reservationType {
     ONLINE,
     WALK_IN,
-    PARTNER
+    PARTNER,
 }

@@ -1,10 +1,13 @@
 package ejb.session.singleton;
 
 import ejb.session.stateless.EmployeeSessionBeanLocal;
+import ejb.session.stateless.PartnerSessionBean;
+import ejb.session.stateless.PartnerSessionBeanLocal;
 import ejb.session.stateless.RoomSessionBeanLocal;
 import ejb.session.stateless.RoomTypeSessionBeanLocal;
 import ejb.session.stateless.RateSessionBeanLocal;
 import entity.Employee;
+import entity.Partner;
 import entity.Room;
 import entity.RoomType;
 import entity.Rate;
@@ -40,6 +43,9 @@ public class DataInitSessionBean {
     
     @EJB
     private RoomSessionBeanLocal roomSessionBean;
+    
+    @EJB
+    private PartnerSessionBeanLocal partnerSessionBean;
     
     @PersistenceContext(unitName = "HotelReservationSystem-ejbPU")
     private EntityManager em;
@@ -150,5 +156,9 @@ public class DataInitSessionBean {
             roomSessionBean.createRoom(new Room(grandSuite, "0505", roomStatus.AVAILABLE));
             
         }    
+        
+        if(em.find(Partner.class, 1L) == null) {
+            partnerSessionBean.createPartner(new Partner("partner", "password"));
+        }
     }  
 }
