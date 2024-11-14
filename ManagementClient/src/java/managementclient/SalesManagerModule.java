@@ -9,6 +9,7 @@ import ejb.session.stateless.RoomTypeSessionBeanRemote;
 import entity.Rate;
 import entity.RoomType;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Scanner;
 import util.enumeration.rateType;
@@ -94,11 +95,21 @@ public class SalesManagerModule {
 
         // Only prompt for dates if the rate type is PEAK or PROMOTION
         if (selectedRateType == rateType.PEAK || selectedRateType == rateType.PROMOTION) {
-            System.out.print("Enter validity start date (YYYY-MM-DD)> ");
-            validFrom = LocalDate.parse(scanner.nextLine());
+            do {
+                try {
+                    System.out.print("Enter validity start date (YYYY-MM-DD)> ");
+                    validFrom = LocalDate.parse(scanner.nextLine());
 
-            System.out.print("Enter validity end date (YYYY-MM-DD)> ");
-            validTo = LocalDate.parse(scanner.nextLine());
+                    System.out.print("Enter validity end date (YYYY-MM-DD)> ");
+                    validTo = LocalDate.parse(scanner.nextLine());
+
+                    if (validTo.isBefore(validFrom) || validTo.isEqual(validFrom)) {
+                        System.out.println("End date must be after start date. Please try again.");
+                    }
+                } catch (DateTimeParseException e) {
+                    System.out.println("Invalid date format. Please use YYYY-MM-DD format.");
+                }
+            } while (validTo == null || validTo.isBefore(validFrom) || validTo.isEqual(validFrom));
         }
 
         // Retrieve available room types and select one

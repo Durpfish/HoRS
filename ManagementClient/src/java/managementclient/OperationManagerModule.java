@@ -82,8 +82,8 @@ public class OperationManagerModule {
                     doViewAllRooms();
                     break;
                 case 10:
-                    //doViewRoomAllocationExceptionReport();
-                    doManualRoomAllocation(); //for testing
+                    doViewRoomAllocationExceptionReport();
+                    //doManualRoomAllocation(); //for testing
                     break;
                 case 11:
                     System.out.println("Logging out...");

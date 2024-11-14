@@ -15,6 +15,7 @@ import entity.RoomAllocation;
 import entity.RoomType;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -81,12 +82,28 @@ public class GuestRelationOfficerModule {
     
     private void doWalkInSearchRoom() {
         System.out.println("*** Walk-in Room Search ***");
-
         System.out.print("Enter check-in date (YYYY-MM-DD)> ");
-        LocalDate checkInDate = LocalDate.parse(scanner.nextLine());
-
-        System.out.print("Enter check-out date (YYYY-MM-DD)> ");
-        LocalDate checkOutDate = LocalDate.parse(scanner.nextLine());
+        LocalDate checkInDate = LocalDate.now();
+        System.out.println(checkInDate);
+    
+        LocalDate checkOutDate;
+        while (true) {
+            try {
+                System.out.print("Enter check-out date (YYYY-MM-DD)> ");
+                checkOutDate = LocalDate.parse(scanner.nextLine());
+            
+                if (checkOutDate.isEqual(checkInDate)) {
+                    System.out.println("Check-out date cannot be the same as check-in date.");
+                    continue;
+                } else if (checkOutDate.isBefore(checkInDate)) {
+                    System.out.println("Check-out date must be after check-in date.");
+                    continue;
+                }
+                break; // Valid date entered, exit loop
+            } catch (DateTimeParseException e) {
+                System.out.println("Invalid date format. Please use YYYY-MM-DD format.");
+            }
+        }
 
         // Retrieve available rooms based on room allocation and availability dates
         List<Room> availableRooms = roomSessionBean.retrieveAvailableRoomsForDates(checkInDate, checkOutDate);
@@ -114,15 +131,27 @@ public class GuestRelationOfficerModule {
         System.out.println("*** Walk-in Room Reservation ***");
     
         // Step 1: Get and validate dates
-        System.out.print("Enter check-in date (YYYY-MM-DD)> " + LocalDate.now());
+        System.out.print("Enter check-in date (YYYY-MM-DD)> ");
         LocalDate checkInDate = LocalDate.now();
-    
-        System.out.print("Enter check-out date (YYYY-MM-DD)> ");
-        LocalDate checkOutDate = LocalDate.parse(scanner.nextLine());
-    
-        if (checkOutDate.isBefore(checkInDate)) {
-            System.out.println("Check-out date must be after check-in date.");
-            return;
+        System.out.println(checkInDate);
+
+        LocalDate checkOutDate;
+        while (true) {
+            try {
+                System.out.print("Enter check-out date (YYYY-MM-DD)> ");
+                checkOutDate = LocalDate.parse(scanner.nextLine());
+            
+                if (checkOutDate.isEqual(checkInDate)) {
+                    System.out.println("Check-out date cannot be the same as check-in date. Please enter a different date.");
+                    continue;
+                } else if (checkOutDate.isBefore(checkInDate)) {
+                    System.out.println("Check-out date must be after check-in date. Please enter a future date.");
+                    continue;
+                }
+                break; // Valid date entered, exit loop
+            } catch (DateTimeParseException e) {
+                System.out.println("Invalid date format. Please use YYYY-MM-DD format.");
+            }
         }
         
         // Step 2: Search and display available rooms with rates
@@ -241,15 +270,23 @@ public class GuestRelationOfficerModule {
 
         // Handle same-day check-in after 2 AM
         LocalTime currentTime = LocalTime.now();
-        if (checkInDate.equals(LocalDate.now()) && currentTime.isAfter(LocalTime.of(2, 0))) {
-            System.out.println("\nProcessing immediate room allocation for same-day check-in after 2 AM...");
-            for (Long reservationId : reservationIds) {
-                Reservation reservation = reservationSessionBean.retrieveReservationById(reservationId);
-                if (reservation != null) {
-                    roomAllocationSessionBean.allocateRoomForReservation(reservation);
+        if (checkInDate.equals(LocalDate.now()) && currentTime.isAfter(LocalTime.of(2, 00))) {
+            System.out.println("\nProcessing immediate room allocation for same-day check-in...");
+            try {
+                for (Long reservationId : reservationIds) {
+                    Reservation reservation = reservationSessionBean.retrieveReservationById(reservationId);
+                    if (reservation != null) {
+                        roomAllocationSessionBean.allocateRoomForReservation(reservation);
+                        System.out.println("Room allocated successfully for reservation ID: " + reservationId);
+                    } else {
+                        System.out.println("Warning: Reservation not found for ID: " + reservationId);
+                    }
                 }
+                System.out.println("Room allocation process completed successfully.");
+            } catch (Exception e) {
+                System.err.println("Error during room allocation: " + e.getMessage());
+            // You might want to log this error or handle it appropriately
             }
-            System.out.println("Room allocation completed.");
         }
 
         // Display summary

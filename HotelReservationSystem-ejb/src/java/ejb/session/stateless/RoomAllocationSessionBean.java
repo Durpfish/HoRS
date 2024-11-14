@@ -26,11 +26,30 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
 
     private static final Logger LOGGER = Logger.getLogger(RoomAllocationSessionBean.class.getName());
 
-    @Schedule(hour = "2", minute = "0", persistent = false)
+    @Schedule(hour = "2", minute = "00", timezone = "Asia/Singapore", persistent = true)
     @Override
     public void allocateRoomsDaily(Timer timer) {
-        LocalDate today = LocalDate.now();
-        allocateRoomsForDate(today);
+        try {
+            LocalDate today = LocalDate.now();
+            System.out.println("Starting daily allocation for date: " + today);
+        
+            // Get reservations for today
+            List<Reservation> reservations = em.createQuery(
+                "SELECT r FROM Reservation r WHERE r.checkInDate = :date ORDER BY r.roomType.name ASC", 
+                Reservation.class)
+                .setParameter("date", today)
+                .getResultList();
+            
+            System.out.println("Found " + reservations.size() + " reservations for today");
+
+            for (Reservation reservation : reservations) {
+                System.out.println("Processing reservation ID: " + reservation.getReservationId());
+                allocateRoomForReservation(reservation);
+            }
+        } catch (Exception e) {
+            System.err.println("Error in daily allocation: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public void allocateRoomsForDate(LocalDate date) {
@@ -67,31 +86,39 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
         }
     }
 
-    @Override
     public void allocateRoomForReservation(Reservation reservation) {
-        List<RoomAllocation> existingAllocations = em.createQuery(
-            "SELECT ra FROM RoomAllocation ra WHERE ra.reservation.reservationId = :reservationId", RoomAllocation.class)
-            .setParameter("reservationId", reservation.getReservationId())
-            .getResultList();
-
-        if (!existingAllocations.isEmpty()) {
-            // If room is already allocated for this reservation, skip allocation
-            return;
-        }
+        try {
+            System.out.println("Starting allocation for reservation: " + reservation.getReservationId());
         
-        Room allocatedRoom = findAvailableRoomOrUpgrade(reservation.getRoomType());
+            // Check existing allocations
+            List<RoomAllocation> existingAllocations = em.createQuery(
+                "SELECT ra FROM RoomAllocation ra WHERE ra.reservation.reservationId = :reservationId", 
+                RoomAllocation.class)
+                .setParameter("reservationId", reservation.getReservationId())
+                .getResultList();
 
-        if (allocatedRoom != null) {
-            createRoomAllocation(reservation.getReservationId(), allocatedRoom.getRoomId());
-            allocatedRoom.setStatus(roomStatus.UNAVAILABLE);
-            em.merge(allocatedRoom);
-
-            if (!allocatedRoom.getRoomType().equals(reservation.getRoomType())) {
-                logRoomAllocationException(reservation, String.format("Room upgraded from %s to %s", reservation.getRoomType().getName(),
-                        allocatedRoom.getRoomType().getName()), ExceptionType.UPGRADE_ALLOCATED);
+            if (!existingAllocations.isEmpty()) {
+                System.out.println("Reservation " + reservation.getReservationId() + " already has allocation");
+                return;
             }
-        } else {
-            logRoomAllocationException(reservation, "No rooms available, manual handling required.", ExceptionType.NO_ROOM_AVAILABLE);
+
+            // Find available room
+            Room allocatedRoom = findAvailableRoomOrUpgrade(reservation.getRoomType());
+            System.out.println("Found room: " + (allocatedRoom != null ? allocatedRoom.getRoomId() : "null"));
+
+            if (allocatedRoom != null) {
+                createRoomAllocation(reservation.getReservationId(), allocatedRoom.getRoomId());
+                allocatedRoom.setStatus(roomStatus.UNAVAILABLE);
+                em.merge(allocatedRoom);
+                em.flush();
+                System.out.println("Successfully allocated room " + allocatedRoom.getRoomId() + 
+                             " for reservation " + reservation.getReservationId());
+            } else {
+                System.out.println("No available rooms found for reservation " + reservation.getReservationId());
+            }
+        } catch (Exception e) {
+            System.err.println("Error allocating room: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -125,42 +152,67 @@ public class RoomAllocationSessionBean implements RoomAllocationSessionBeanRemot
     }
 
     private void createRoomAllocation(Long reservationId, Long roomId) {
-        Reservation managedReservation = em.find(Reservation.class, reservationId);
-        Room managedRoom = em.find(Room.class, roomId);
+        try {
+            System.out.println("Creating allocation for reservation " + reservationId + " with room " + roomId);
+            Reservation managedReservation = em.find(Reservation.class, reservationId);
+            Room managedRoom = em.find(Room.class, roomId);
 
-        if (managedReservation != null && managedRoom != null) {
-            RoomAllocation roomAllocation = new RoomAllocation();
-            roomAllocation.setAllocationDate(LocalDate.now());
-            roomAllocation.setRoom(managedRoom);
-            roomAllocation.setReservation(managedReservation);
-            em.persist(roomAllocation);
-        } else {
-            LOGGER.log(Level.WARNING, "Cannot create RoomAllocation as reservation or room is not found.");
+            if (managedReservation != null && managedRoom != null) {
+                RoomAllocation roomAllocation = new RoomAllocation();
+                roomAllocation.setAllocationDate(LocalDate.now());
+                roomAllocation.setRoom(managedRoom);
+                roomAllocation.setReservation(managedReservation);
+                em.persist(roomAllocation);
+                em.flush();
+                System.out.println("Successfully created room allocation");
+            } else {
+                System.out.println("Failed to create allocation - reservation or room not found");
+            }
+        } catch (Exception e) {
+            System.err.println("Error creating room allocation: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
+
     private Room findAvailableRoomOrUpgrade(RoomType requestedRoomType) {
-        RoomType currentRoomType = requestedRoomType;
+        try {
+            System.out.println("Searching for room of type: " + requestedRoomType.getName());
+            RoomType currentRoomType = requestedRoomType;
 
-        while (currentRoomType != null) {
-            Room availableRoom = findAvailableRoom(currentRoomType);
-            if (availableRoom != null) {
-                return availableRoom;
+            while (currentRoomType != null) {
+                Room availableRoom = findAvailableRoom(currentRoomType);
+                if (availableRoom != null) {
+                    System.out.println("Found available room: " + availableRoom.getRoomId());
+                    return availableRoom;
+                }
+                currentRoomType = currentRoomType.getNextHigherRoomType();
+                System.out.println("Trying next room type: " + (currentRoomType != null ? currentRoomType.getName() : "none available"));
             }
-            currentRoomType = currentRoomType.getNextHigherRoomType(); // Use nextHigherRoomType relationship
+        } catch (Exception e) {
+            System.err.println("Error finding available room: " + e.getMessage());
+            e.printStackTrace();
         }
-
         return null;
     }
 
     private Room findAvailableRoom(RoomType roomType) {
-        List<Room> availableRooms = em.createQuery(
-            "SELECT r FROM Room r WHERE r.roomType = :roomType AND r.status = :status ORDER BY r.roomNumber ASC", Room.class)
-            .setParameter("roomType", roomType)
-            .setParameter("status", roomStatus.AVAILABLE)
-            .getResultList();
-    
-        return availableRooms.isEmpty() ? null : availableRooms.get(0);
+        try {
+            List<Room> availableRooms = em.createQuery(
+                "SELECT r FROM Room r WHERE r.roomType = :roomType AND r.status = :status " +
+                "ORDER BY r.roomNumber ASC", Room.class)
+                .setParameter("roomType", roomType)
+                .setParameter("status", roomStatus.AVAILABLE)
+                .getResultList();
+        
+            System.out.println("Found " + availableRooms.size() + " available rooms for type " + 
+                              roomType.getName());
+            return availableRooms.isEmpty() ? null : availableRooms.get(0);
+        } catch (Exception e) {
+            System.err.println("Error finding available room: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
     }
 
     private void logRoomAllocationException(Reservation reservation, String message, ExceptionType exceptionType) {
