@@ -7,6 +7,7 @@ import entity.Reservation;
 import entity.Room;
 import entity.RoomType;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -162,18 +163,26 @@ public class MainApp {
 
     private void doMakeReservation() {
         System.out.println("*** HoRS Reservation Client :: Make a Reservation ***");
+        LocalDate checkInDate = null;
+        LocalDate checkOutDate = null;
 
         try {
-            // Step 1: Get and validate check-in and check-out dates
-            System.out.print("Enter check-in date (YYYY-MM-DD)> ");
-            LocalDate checkInDate = LocalDate.parse(scanner.nextLine());
+            while (true) {
+                try {
+                    System.out.print("Enter check-in date (YYYY-MM-DD)> ");
+                    checkInDate = LocalDate.parse(scanner.nextLine());
 
-            System.out.print("Enter check-out date (YYYY-MM-DD)> ");
-            LocalDate checkOutDate = LocalDate.parse(scanner.nextLine());
-
-            if (checkOutDate.isBefore(checkInDate)) {
-                System.out.println("Check-out date must be after check-in date.");
-                return;
+                    System.out.print("Enter check-out date (YYYY-MM-DD)> ");
+                    checkOutDate = LocalDate.parse(scanner.nextLine());
+                   
+                    if (checkOutDate.isBefore(checkInDate)) {
+                        System.out.println("Check-out date must be after check-in date. Please try again.");
+                    } else {
+                        break;  // Exit the loop if dates are valid
+                    }
+                } catch (DateTimeParseException e) {
+                    System.out.println("Invalid date format. Please enter the date in YYYY-MM-DD format.");
+                }
             }
 
             // Step 2: Search and display available room types with rates
@@ -294,13 +303,27 @@ public class MainApp {
     
     private void doSearchRoomAvailability() {
         System.out.println("*** HoRS Reservation Client :: Search Room Availability ***");
+        LocalDate checkInDate = null;
+        LocalDate checkOutDate = null;
 
         // Step 1: Get check-in and check-out dates
-        System.out.print("Enter check-in date (YYYY-MM-DD)> ");
-        LocalDate checkInDate = LocalDate.parse(scanner.nextLine());
+        while (true) {
+            try {
+                System.out.print("Enter check-in date (YYYY-MM-DD)> ");
+                checkInDate = LocalDate.parse(scanner.nextLine());
 
-        System.out.print("Enter check-out date (YYYY-MM-DD)> ");
-        LocalDate checkOutDate = LocalDate.parse(scanner.nextLine());
+                System.out.print("Enter check-out date (YYYY-MM-DD)> ");
+                checkOutDate = LocalDate.parse(scanner.nextLine());
+
+                if (checkOutDate.isBefore(checkInDate)) {
+                    System.out.println("Error: Check-out date must be after check-in date. Please try again.");
+                } else {
+                    break;  // Exit the loop if dates are valid
+                }
+            } catch (DateTimeParseException e) {
+                System.out.println("Error: Invalid date format. Please enter the date in YYYY-MM-DD format.");
+            }
+        }
 
         // Step 2: Retrieve available rooms based on date range
         List<Room> availableRooms = roomSessionBean.retrieveAvailableRoomsForDates(checkInDate, checkOutDate);
