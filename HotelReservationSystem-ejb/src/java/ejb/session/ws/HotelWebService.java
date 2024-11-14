@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
 import javax.ejb.Stateless;
@@ -64,45 +65,48 @@ public class HotelWebService {
     // Reservation-related Web Service Methods
     @WebMethod(operationName = "createReservationWithDates")
     public Long createReservationWithDates(
-            @WebParam(name = "partnerId") Long partnerId,
-            @WebParam(name = "roomTypeId") Long roomTypeId,
-            @WebParam(name = "checkInDateStr") String checkInDateStr,
-            @WebParam(name = "checkOutDateStr") String checkOutDateStr,
-            @WebParam(name = "numberOfGuests") int numberOfGuests) {
+        @WebParam(name = "partnerId") Long partnerId,
+        @WebParam(name = "roomTypeId") Long roomTypeId,
+        @WebParam(name = "checkInDateStr") String checkInDateStr,
+        @WebParam(name = "checkOutDateStr") String checkOutDateStr,
+        @WebParam(name = "numberOfGuests") int numberOfGuests) {
 
-        // Convert date strings to LocalDate
-        LocalDate checkInDate = LocalDate.parse(checkInDateStr);
-        LocalDate checkOutDate = LocalDate.parse(checkOutDateStr);
+        try {
+            LocalDate checkInDate = LocalDate.parse(checkInDateStr);
+            LocalDate checkOutDate = LocalDate.parse(checkOutDateStr);
 
-        // Retrieve the Partner and RoomType entities
-        Partner partner = em.find(Partner.class, partnerId);
-        RoomType roomType = em.find(RoomType.class, roomTypeId);
+            Partner partner = em.find(Partner.class, partnerId);
+            RoomType roomType = em.find(RoomType.class, roomTypeId);
 
-        // Validate entities
-        if (partner == null || roomType == null) {
-            throw new IllegalArgumentException("Partner or RoomType not found");
+            if (partner == null || roomType == null) {
+                throw new IllegalArgumentException("Partner or RoomType not found");
+            }
+
+            Reservation reservation = new Reservation();
+            reservation.setCheckInDate(checkInDate);
+            reservation.setCheckOutDate(checkOutDate);
+            reservation.setNumberOfGuests(numberOfGuests);
+            reservation.setPartner(partner);
+            reservation.setRoomType(roomType);
+            reservation.setReservationType(reservationType.PARTNER);
+
+            // Calculate total amount and set it
+            double totalAmount = calculateRateForStay(roomTypeId, checkInDate, checkOutDate);
+            reservation.setTotalAmount(totalAmount);
+
+            em.persist(reservation);
+            em.flush();
+
+            em.detach(reservation);
+            reservation.setPartner(null);
+            reservation.setRoomType(null);
+
+            return reservation.getReservationId();
+        } catch (Exception e) {
+            System.err.println("Error in createReservationWithDates: " + e.getMessage());
+            e.printStackTrace();
+            throw new EJBException("An error occurred while creating the reservation: " + e.getMessage());
         }
-
-        // Create and set up the Reservation object
-        Reservation reservation = new Reservation();
-        reservation.setCheckInDate(checkInDate);
-        reservation.setCheckOutDate(checkOutDate);
-        reservation.setNumberOfGuests(numberOfGuests);
-        reservation.setPartner(partner);
-        reservation.setRoomType(roomType);
-        reservation.setReservationType(reservationType.PARTNER); // Set desired reservation type
-
-        // Persist the reservation
-        em.persist(reservation);
-        em.flush(); // Ensures ID is generated
-
-        // Detach the reservation entity if returning more details is needed in the future
-        em.detach(reservation);
-        reservation.setPartner(null); // Detach partner if unnecessary for client
-        reservation.setRoomType(null); // Detach roomType if unnecessary for client
-
-        // Return only the reservation ID
-        return reservation.getReservationId();
     }
 
 
@@ -199,14 +203,16 @@ public class HotelWebService {
     }
     
     @WebMethod(operationName = "calculateRateForStay")
-    public double calculateRateForStay(Long roomTypeId, LocalDate checkInDate, LocalDate checkOutDate) {
+        public double calculateRateForStay(Long roomTypeId, LocalDate checkInDate, LocalDate checkOutDate) {
         RoomType roomType = em.find(RoomType.class, roomTypeId);
         if (roomType == null) {
             throw new IllegalArgumentException("Room type not found.");
         }
-        return rateSessionBeanLocal.calculateReservationAmount(roomType, checkInDate, checkOutDate);
+        // Ensure rate calculation does not return null or throw exceptions for missing data
+        Double rate = rateSessionBeanLocal.calculateReservationAmount(roomType, checkInDate, checkOutDate);
+        return rate != null ? rate : 0.0; // return 0.0 if no rate is found
     }
-    
+  
     @WebMethod(operationName = "retrieveAvailableRoomTypes")
     public List<RoomType> retrieveAvailableRoomTypes(@WebParam(name = "checkInDate") String checkInDateStr,
                                                      @WebParam(name = "checkOutDate") String checkOutDateStr) {

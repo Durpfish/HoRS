@@ -109,10 +109,11 @@ public class RateSessionBean implements RateSessionBeanRemote, RateSessionBeanLo
         double totalAmount = 0.0;
         LocalDate currentDate = checkInDate;
 
-        while (!currentDate.isAfter(checkOutDate)) {
+        // Loop until the day before the checkOutDate
+        while (currentDate.isBefore(checkOutDate)) {
             Rate applicableRate = retrieveApplicableRate(roomType, currentDate);
             if (applicableRate != null) {
-                totalAmount += applicableRate.getRatePerNight();
+            totalAmount += applicableRate.getRatePerNight();
             }
             currentDate = currentDate.plusDays(1);
         }
