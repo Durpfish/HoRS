@@ -6,6 +6,7 @@ import ws.holiday.Reservation;
 import ws.holiday.Room;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -108,6 +109,10 @@ public class HotelReservationSystemJavaSeClient {
                 System.out.println("Invalid option. Please try again.");
         }
     }
+    
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+
 
     private static void doSearchRoomAvailability() {
         System.out.println("*** Partner Client :: Search Room Availability ***");
@@ -230,7 +235,7 @@ public class HotelReservationSystemJavaSeClient {
         }
     }
 
-
+    
 
 
     private static void doViewReservationDetails() {
@@ -247,9 +252,13 @@ public class HotelReservationSystemJavaSeClient {
         } else {
             System.out.println("Reservation Details:");
             System.out.println("Reservation ID: " + reservation.getReservationId());
-            System.out.println("Check-in Date: " + reservation.getCheckInDate());
-            System.out.println("Check-out Date: " + reservation.getCheckOutDate());
-            System.out.println("Room Type: " + reservation.getRoomType().getName());
+            System.out.println("Check-in Date: " + reservation.getCheckInDateFormatted());
+            System.out.println("Check-out Date: " + reservation.getCheckOutDateFormatted());
+            if (reservation.getRoomType() != null) {
+                System.out.println("Room Type: " + reservation.getRoomType().getName());
+            } else {
+                System.out.println("Room Type information is not available.");
+            }
             System.out.println("Total Amount: $" + reservation.getTotalAmount());
         }
     }
@@ -265,8 +274,8 @@ public class HotelReservationSystemJavaSeClient {
             System.out.println("All Reservations:");
             for (Reservation reservation : reservations) {
                 System.out.println("Reservation ID: " + reservation.getReservationId() +
-                        ", Check-in Date: " + reservation.getCheckInDate() +
-                        ", Check-out Date: " + reservation.getCheckOutDate());
+                        ", Check-in Date: " + reservation.getCheckInDateFormatted() +
+                        ", Check-out Date: " + reservation.getCheckOutDateFormatted());
             }
         }
     }

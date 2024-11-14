@@ -5,15 +5,20 @@ import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  * Represents a Partner in the hotel reservation system.
  */
 @Entity
+@XmlAccessorType(XmlAccessType.FIELD)
 public class Partner implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -40,7 +45,8 @@ public class Partner implements Serializable {
     @Column(length = 128, nullable = false) // Increased length for hashed passwords
     private String password;
 
-    @OneToMany(mappedBy = "partner", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "partner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @XmlTransient
     private List<Reservation> reservations;
 
     // Constructors

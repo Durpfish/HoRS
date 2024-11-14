@@ -12,6 +12,7 @@ import entity.Room;
 import entity.RoomAllocation;
 import entity.RoomType;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.jws.WebMethod;
@@ -22,7 +23,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import util.enumeration.reservationType;
 
-@WebService(serviceName = "HotelWebService")
+@WebService(serviceName = "HotelWebService", targetNamespace = "http://ws.session.ejb/")
 @Stateless()
 public class HotelWebService {
 
@@ -43,6 +44,9 @@ public class HotelWebService {
     
     @EJB
     private RoomTypeSessionBeanLocal roomTypeSessionBeanLocal;
+    
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
 
     // Partner-related Web Service Methods
     @WebMethod(operationName = "loginPartner")
@@ -51,9 +55,11 @@ public class HotelWebService {
         if (partner != null) {
             em.detach(partner);
             partner.setPassword(null); // Hide the password for security
+            partner.setReservations(null); // Break the cycle by nullifying the relationship
         }
         return partner;
     }
+
 
     // Reservation-related Web Service Methods
     @WebMethod(operationName = "createReservationWithDates")
@@ -107,15 +113,37 @@ public class HotelWebService {
         Reservation reservation = reservationSessionBeanLocal.retrieveReservationById(reservationId);
         if (reservation != null) {
             em.detach(reservation);
-            em.detach(reservation.getPartner());
-            em.detach(reservation.getRoomType());
-            if (reservation.getRoomAllocation() != null) {
-                em.detach(reservation.getRoomAllocation());
-                em.detach(reservation.getRoomAllocation().getRoom());
+
+            reservation.setCheckInDateFormatted(reservation.getCheckInDate().format(DATE_FORMATTER));
+            reservation.setCheckOutDateFormatted(reservation.getCheckOutDate().format(DATE_FORMATTER));
+            // Retrieve RoomType by ID if not already loaded, using RoomTypeSessionBean
+            RoomType roomType = reservation.getRoomType();
+            if (roomType != null) {
+                roomType = roomTypeSessionBeanLocal.retrieveRoomTypeById(roomType.getRoomTypeId());
+                em.detach(roomType);  // Ensure detached after retrieval
+                reservation.setRoomType(roomType);  // Attach it to the reservation
+            }
+
+            // Detach Partner if it exists
+            Partner partner = reservation.getPartner();
+            if (partner != null) {
+                em.detach(partner);
+            }
+
+            // Detach RoomAllocation and Room if they exist
+            RoomAllocation roomAllocation = reservation.getRoomAllocation();
+            if (roomAllocation != null) {
+                em.detach(roomAllocation);
+
+                Room room = roomAllocation.getRoom();
+                if (room != null) {
+                    em.detach(room);
+                }
             }
         }
         return reservation;
     }
+
 
     @WebMethod(operationName = "retrievePartnerReservations")
     public List<Reservation> retrievePartnerReservations(Long partnerId) {
@@ -123,6 +151,9 @@ public class HotelWebService {
 
         for (Reservation reservation : reservations) {
             em.detach(reservation);
+            
+            reservation.setCheckInDateFormatted(reservation.getCheckInDate().format(DATE_FORMATTER));
+            reservation.setCheckOutDateFormatted(reservation.getCheckOutDate().format(DATE_FORMATTER));
 
             // Remove Partner details for partner privacy
             reservation.setPartner(null);

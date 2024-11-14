@@ -3,9 +3,13 @@ package entity;
 import java.io.Serializable;
 import java.time.LocalDate;
 import javax.persistence.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
 import util.enumeration.reservationType;
 
 @Entity
+@XmlAccessorType(XmlAccessType.FIELD)
 public class Reservation implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -30,12 +34,13 @@ public class Reservation implements Serializable {
     @JoinColumn(name = "guestId")
     private Guest guest;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "roomTypeId")
     private RoomType roomType;
 
-    @ManyToOne(optional = true)
+    @ManyToOne(optional = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "partnerId")
+    @XmlTransient
     private Partner partner;
 
     @Enumerated(EnumType.STRING)
@@ -47,6 +52,12 @@ public class Reservation implements Serializable {
     
     @Column(nullable = false)
     private double totalAmount;
+    
+    @Transient
+    private String checkInDateFormatted;
+    
+    @Transient
+    private String checkOutDateFormatted;
 
     // Constructors
     public Reservation() {
@@ -179,4 +190,21 @@ public class Reservation implements Serializable {
     public String toString() {
         return "entity.Reservation[ id=" + reservationId + " ]";
     }
+    
+    public String getCheckInDateFormatted() {
+        return checkInDateFormatted;
+    }
+
+    public void setCheckInDateFormatted(String checkInDateFormatted) {
+        this.checkInDateFormatted = checkInDateFormatted;
+    }
+
+    public String getCheckOutDateFormatted() {
+        return checkOutDateFormatted;
+    }
+
+    public void setCheckOutDateFormatted(String checkOutDateFormatted) {
+        this.checkOutDateFormatted = checkOutDateFormatted;
+    }
+
 }
